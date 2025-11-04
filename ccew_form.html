@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCEW Form - {{ serial_no }}</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; padding: 10px; background: #f5f5f5; font-size: 14px; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; margin-bottom: 10px; font-size: 22px; text-align: center; }
+        h2 { color: #666; margin-top: 25px; margin-bottom: 12px; font-size: 16px; border-bottom: 2px solid #007bff; padding-bottom: 5px; }
+        h3 { color: #777; margin-top: 15px; margin-bottom: 10px; font-size: 14px; font-weight: bold; }
+        .field-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 4px; color: #555; font-size: 13px; }
+        input[type="text"], input[type="number"], input[type="date"], input[type="email"], select, textarea {
+            width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;
+        }
+        input[readonly] { background: #f9f9f9; color: #666; cursor: not-allowed; }
+        .readonly-note { font-size: 11px; color: #999; font-style: italic; margin-top: 2px; }
+        .checkbox-group { margin: 8px 0; }
+        .checkbox-group label { display: block; margin-bottom: 8px; font-weight: normal; }
+        .checkbox-group input[type="checkbox"], .checkbox-group input[type="radio"] { margin-right: 8px; }
+        .submit-btn { background: #007bff; color: white; padding: 15px 30px; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; width: 100%; margin-top: 30px; font-weight: bold; }
+        .submit-btn:hover { background: #0056b3; }
+        .info-box { background: #e7f3ff; border-left: 4px solid #007bff; padding: 12px; margin-bottom: 20px; border-radius: 4px; }
+        .info-box p { margin: 4px 0; font-size: 13px; }
+        .equipment-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        .equipment-table th, .equipment-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .equipment-table th { background: #f5f5f5; font-weight: bold; font-size: 12px; }
+        .equipment-table input[type="text"], .equipment-table input[type="number"] { width: 100%; padding: 6px; }
+        .equipment-table input[type="checkbox"] { width: auto; }
+        .row { display: flex; gap: 10px; }
+        .col { flex: 1; }
+        @media (max-width: 600px) {
+            .row { flex-direction: column; }
+            body { padding: 5px; }
+            .container { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Certificate of Compliance for Electrical Work (CCEW)</h1>
+        
+        <div class="info-box">
+            <p><strong>Job #{{ serial_no }}</strong></p>
+            <p>✓ Pre-filled fields are read-only (auto-filled from SimPro)</p>
+            <p>✎ Please complete all remaining fields marked with input boxes</p>
+        </div>
+        
+        <form id="ccewForm" method="POST" action="/api/ccew/submit">
+            <input type="hidden" name="session_id" value="{{ session_id }}">
+            
+            <!-- SECTION 1: INSTALLATION ADDRESS -->
+            <h2>1. Installation Address</h2>
+            
+            <div class="field-group">
+                <label>Serial No</label>
+                <input type="text" value="{{ serial_no }}" readonly>
+                <div class="readonly-note">Auto-filled from SimPro Job ID</div>
+            </div>
+            
+            <div class="field-group">
+                <label>Property Name</label>
+                <input type="text" value="{{ property_name }}" readonly>
+                <div class="readonly-note">Auto-filled from SimPro Site</div>
+            </div>
+            
+            <div class="row">
+                <div class="col">
+                    <div class="field-group">
+                        <label>Street Number</label>
+                        <input type="text" value="{{ install_street_number }}" readonly>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="field-group">
+                        <label>Street Name</label>
+                        <input type="text" value="{{ install_street_name }}" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="field-group">
+                <label>Nearest Cross Street</label>
+                <input type="text" name="nearest_cross_street" placeholder="Enter nearest cross street">
+            </div>
+            
+            <div class="row">
+                <div class="col">
+                    <div class="field-group">
+                        <label>Suburb</label>
+                        <input type="text" value="{{ install_suburb }}" readonly>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="field-group">
+                        <label>State</label>
+                        <input type="text" value="{{ install_state }}" readonly>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="field-group">
+                        <label>Post Code</label>
+                        <input type="text" value="{{ install_postcode }}" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="field-group">
+                <label>Pit/Pillar/Pole No.</label>
+                <input type="text" name="pit_pillar_pole_no" placeholder="Enter pit/pillar/pole number (if applicable)">
+            </div>
+            
+            <div class="field-group">
+                <label>NMI (National Meter Identifier)</label>
+                <input type="text" name="nmi" placeholder="Enter NMI">
+            </div>
+            
+            <div class="field-group">
+                <label>Meter No.</label>
+                <input type="text" name="meter_no" placeholder="Enter meter number">
+            </div>
+            
+            <div class="field-group">
+                <label>AEMO Metering Provider I.D.</label>
+                <input type="text" name="aemo_provider_id" placeholder="Enter AEMO provider ID">
+            </div>
+            
+            <!-- SECTION 2: CUSTOMER DETAILS -->
+            <h2>2. Customer Details</h2>
+            
+            <div class="row">
+                <div class="col">
+                    <div class="field-group">
+                        <label>First Name</label>
+                        <input type="text" value="{{ customer_first_name }}" readonly>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="field-group">
+                        <label>Last Name</label>
+                        <input type="text" value="{{ customer_last_name }}" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="field-group">
+                <label>Company Name</label>
+                <input type="text" value="{{ customer_company_name }}" readonly>
+                <div class="readonly-note">Auto-filled from SimPro Customer</div>
+            </div>
+            
+            <!-- SECTION 3: INSTALLATION DETAILS -->
+            <h2>3. Installation Details</h2>
+            
+            <div class="field-group">
+                <label>Type of Installation *</label>
+                <select name="installation_type" required>
+                    <option value="">Select type...</option>
+                    <option value="Residential">Residential</option>
+                    <option value="Commercial">Commercial</option>
+                    <option value="Industrial">Industrial</option>
+                    <option value="Rural">Rural</option>
+                    <option value="Mixed Development">Mixed Development</option>
+                </select>
+            </div>
+            
+            <h3>Work Carried Out (select all that apply)</h3>
+            <div class="checkbox-group">
+                <label><input type="checkbox" name="work_new_work" value="yes"> New Work</label>
+                <label><input type="checkbox" name="work_installed_meter" value="yes"> Installed Meter</label>
+                <label><input type="checkbox" name="work_network_connection" value="yes"> Network Connection</label>
+                <label><input type="checkbox" name="work_addition_alteration" value="yes"> Addition/Alteration to Existing</label>
+                <label><input type="checkbox" name="work_advanced_meter" value="yes"> Install Advanced Meter</label>
+                <label><input type="checkbox" name="work_ev_connection" value="yes"> EV Connection</label>
+                <label><input type="checkbox" name="work_reinspection" value="yes"> Re-inspection of Non-Compliant Work</label>
+            </div>
+            
+            <div class="field-group">
+                <label>Non-Compliance No. (if re-inspection)</label>
+                <input type="text" name="non_compliance_no" placeholder="Enter non-compliance number">
+            </div>
+            
+            <h3>Special Conditions (select all that apply)</h3>
+            <div class="checkbox-group">
+                <label><input type="checkbox" name="special_over_100_amps" value="yes"> Over 100 amps</label>
+                <label><input type="checkbox" name="special_hazardous_area" value="yes"> Hazardous Area</label>
+                <label><input type="checkbox" name="special_off_grid" value="yes"> Off Grid Installation</label>
+                <label><input type="checkbox" name="special_high_voltage" value="yes"> High Voltage</label>
+                <label><input type="checkbox" name="special_unmetered" value="yes"> Unmetered Supply</label>
+                <label><input type="checkbox" name="special_secondary_power" value="yes"> Secondary Power Supply</label>
+            </div>
+            
+            <!-- SECTION 4: DETAILS OF EQUIPMENT -->
+            <h2>4. Details of Equipment Installed</h2>
+            
+            <table class="equipment-table">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Equipment Type</th>
+                        <th style="width: 15%;">Installed?</th>
+                        <th style="width: 20%;">Rating</th>
+                        <th style="width: 15%;">Number</th>
+                        <th style="width: 25%;">Particulars</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Switchboard</strong></td>
+                        <td><input type="checkbox" name="equip_switchboard" value="yes"></td>
+                        <td><input type="text" name="equip_switchboard_rating" placeholder="e.g., 100A"></td>
+                        <td><input type="number" name="equip_switchboard_number" placeholder="1"></td>
+                        <td><input type="text" name="equip_switchboard_particulars" placeholder="Details"></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Circuits</strong></td>
+                        <td><input type="checkbox" name="equip_circuits" value="yes"></td>
+                        <td><input type="text" name="equip_circuits_rating" placeholder="e.g., 20A"></td>
+                        <td><input type="number" name="equip_circuits_number" placeholder="10"></td>
+                        <td><input type="text" name="equip_circuits_particulars" placeholder="Details"></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Lighting</strong></td>
+                        <td><input type="checkbox" name="equip_lighting" value="yes"></td>
+                        <td><input type="text" name="equip_lighting_rating" placeholder="e.g., 10A"></td>
+                        <td><input type="number" name="equip_lighting_number" placeholder="15"></td>
+                        <td><input type="text" name="equip_lighting_particulars" placeholder="Details"></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Socket Outlets</strong></td>
+                        <td><input type="checkbox" name="equip_sockets" value="yes"></td>
+                        <td><input type="text" name="equip_sockets_rating" placeholder="e.g., 10A"></td>
+                        <td><input type="number" name="equip_sockets_number" placeholder="20"></td>
+                        <td><input type="text" name="equip_sockets_particulars" placeholder="Details"></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Appliances</strong></td>
+                        <td><input type="checkbox" name="equip_appliances" value="yes"></td>
+                        <td><input type="text" name="equip_appliances_rating" placeholder="e.g., 15A"></td>
+                        <td><input type="number" name="equip_appliances_number" placeholder="2"></td>
+                        <td><input type="text" name="equip_appliances_particulars" placeholder="Details"></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Generation</strong></td>
+                        <td><input type="checkbox" name="equip_generation" value="yes"></td>
+                        <td><input type="text" name="equip_generation_rating" placeholder="e.g., 5kW"></td>
+                        <td><input type="number" name="equip_generation_number" placeholder="1"></td>
+                        <td><input type="text" name="equip_generation_particulars" placeholder="Solar/Battery"></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Storage</strong></td>
+                        <td><input type="checkbox" name="equip_storage" value="yes"></td>
+                        <td><input type="text" name="equip_storage_rating" placeholder="e.g., 10kWh"></td>
+                        <td><input type="number" name="equip_storage_number" placeholder="1"></td>
+                        <td><input type="text" name="equip_storage_particulars" placeholder="Battery type"></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <!-- SECTION 5: METERS -->
+            <h2>5. Meters</h2>
+            
+            <div class="field-group">
+                <label>Meter Status</label>
+                <div class="checkbox-group">
+                    <label><input type="radio" name="meter_status" value="Installed"> Installed (I)</label>
+                    <label><input type="radio" name="meter_status" value="Removed"> Removed (R)</label>
+                    <label><input type="radio" name="meter_status" value="Existing"> Existing (E)</label>
+                </div>
+            </div>
+            
+            <div class="field-group">
+                <label>Meter No.</label>
+                <input type="text" name="meter_number" placeholder="Enter meter number">
+            </div>
+            
+            <div class="row">
+                <div class="col">
+                    <div class="field-group">
+                        <label>No. of Dials</label>
+                        <input type="number" name="meter_dials" placeholder="5">
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="field-group">
+                        <label>Master/Sub Status</label>
+                        <select name="meter_master_sub">
+                            <option value="">Select...</option>
+                            <option value="N">N (Neither)</option>
+                            <option value="M">M (Master)</option>
+                            <option value="S">S (Sub)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="field-group">
+                <label>Wired as Master/Sub</label>
+                <input type="text" name="meter_wired_as" placeholder="Enter wiring configuration">
+            </div>
+            
+            <div class="row">
+                <div class="col">
+                    <div class="field-group">
+                        <label>Register No.</label>
+                        <input type="text" name="meter_register_no" placeholder="Register number">
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="field-group">
+                        <label>Reading</label>
+                        <input type="text" name="meter_reading" placeholder="Current reading">
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="field-group">
+                        <label>Tariff</label>
+                        <input type="text" name="meter_tariff" placeholder="Tariff code">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="field-group">
+                <label>Estimated Increase in Load (A/ph)</label>
+                <input type="text" name="load_increase" placeholder="Enter estimated load increase">
+            </div>
+            
+            <div class="field-group">
+                <label>Is increased load within capacity? *</label>
+                <div class="checkbox-group">
+                    <label><input type="radio" name="load_within_capacity" value="Yes" required> Yes</label>
+                    <label><input type="radio" name="load_within_capacity" value="No" required> No</label>
+                </div>
+            </div>
+            
+            <div class="field-group">
+                <label>Is work connected to supply? *</label>
+                <div class="checkbox-group">
+                    <label><input type="radio" name="work_connected" value="Yes" required> Yes</label>
+                    <label><input type="radio" name="work_connected" value="No" required> No</label>
+                </div>
+            </div>
+            
+            <!-- SECTION 6: INSTALLER LICENSE DETAILS -->
+            <h2>6. Installer License Details</h2>
+            
+            <div class="row">
+                <div class="col">
+                    <div class="field-group">
+                        <label>First Name</label>
+                        <input type="text" value="{{ installer_first_name }}" readonly>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="field-group">
+                        <label>Last Name</label>
+                        <input type="text" value="{{ installer_last_name }}" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="field-group">
+                <label>Address</label>
+                <input type="text" value="{{ installer_street_number }} {{ installer_street_name }}, {{ installer_suburb }} {{ installer_state }} {{ installer_postcode }}" readonly>
+                <div class="readonly-note">Company address</div>
+            </div>
+            
+            <div class="row">
+                <div class="col">
+                    <div class="field-group">
+                        <label>Email</label>
+                        <input type="email" value="{{ installer_email }}" readonly>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="field-group">
+                        <label>Office No.</label>
+                        <input type="text" value="{{ installer_office_phone }}" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col">
+                    <div class="field-group">
+                        <label>Contractor's License No.</label>
+                        <input type="text" value="{{ installer_license_no }}" readonly>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="field-group">
+                        <label>Expiry Date</label>
+                        <input type="text" value="{{ installer_license_expiry }}" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SECTION 7: TEST REPORT -->
+            <h2>7. Test Report</h2>
+            
+            <div class="checkbox-group">
+                <label><input type="checkbox" name="test_earthing" value="yes"> Earthing system integrity</label>
+                <label><input type="checkbox" name="test_rcd" value="yes"> Residual current device operational</label>
+                <label><input type="checkbox" name="test_insulation" value="yes"> Insulation resistance Mohms</label>
+                <label><input type="checkbox" name="test_visual" value="yes"> Visual check suitable for connection</label>
+                <label><input type="checkbox" name="test_polarity" value="yes"> Polarity</label>
+                <label><input type="checkbox" name="test_standalone" value="yes"> Stand-Alone system complies AS4509</label>
+                <label><input type="checkbox" name="test_current" value="yes"> Correct current connections</label>
+                <label><input type="checkbox" name="test_fault_loop" value="yes"> Fault loop impedance (if necessary)</label>
+            </div>
+            
+            <div class="field-group">
+                <label>Test Completed On *</label>
+                <input type="date" name="test_date" required>
+            </div>
+            
+            <!-- SECTION 8: TESTER LICENSE DETAILS -->
+            <h2>8. Tester License Details</h2>
+            
+            <div class="row">
+                <div class="col">
+                    <div class="field-group">
+                        <label>First Name</label>
+                        <input type="text" value="{{ tester_first_name }}" readonly>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="field-group">
+                        <label>Last Name</label>
+                        <input type="text" value="{{ tester_last_name }}" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="field-group">
+                <label>Address</label>
+                <input type="text" value="{{ tester_street_number }} {{ tester_street_name }}, {{ tester_suburb }} {{ tester_state }} {{ tester_postcode }}" readonly>
+                <div class="readonly-note">Same as installer</div>
+            </div>
+            
+            <div class="field-group">
+                <label>Email</label>
+                <input type="email" value="{{ tester_email }}" readonly>
+            </div>
+            
+            <div class="row">
+                <div class="col">
+                    <div class="field-group">
+                        <label>Contractor's License No.</label>
+                        <input type="text" value="{{ tester_license_no }}" readonly>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="field-group">
+                        <label>Expiry Date</label>
+                        <input type="text" value="{{ tester_license_expiry }}" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SECTION 9: SUBMIT CCEW -->
+            <h2>9. Submit CCEW</h2>
+            
+            <div class="field-group">
+                <label>Energy Provider *</label>
+                <select name="energy_provider" required>
+                    <option value="">Select provider...</option>
+                    <option value="Ausgrid">Ausgrid</option>
+                    <option value="Endeavour Energy">Endeavour Energy</option>
+                    <option value="Essential Energy">Essential Energy</option>
+                </select>
+            </div>
+            
+            <div class="field-group">
+                <label>Meter Provider's Email *</label>
+                <input type="email" name="meter_provider_email" placeholder="Enter meter provider email" required>
+            </div>
+            
+            <div class="field-group">
+                <label>Confirm Meter Provider's Email *</label>
+                <input type="email" name="meter_provider_email_confirm" placeholder="Confirm meter provider email" required>
+            </div>
+            
+            <div class="info-box" style="margin-top: 20px;">
+                <p><strong>Signature:</strong> {{ signature }}</p>
+                <p style="font-size: 11px;">By submitting this form, I certify that the electrical work described has been carried out in accordance with AS/NZS 3000.</p>
+            </div>
+            
+            <button type="submit" class="submit-btn">Submit CCEW</button>
+        </form>
+    </div>
+    
+    <script>
+        document.getElementById('ccewForm').addEventListener('submit', function(e) {
+            const email = document.querySelector('input[name="meter_provider_email"]').value;
+            const confirm = document.querySelector('input[name="meter_provider_email_confirm"]').value;
+            
+            if (email !== confirm) {
+                e.preventDefault();
+                alert('Meter provider email addresses do not match!');
+                return false;
+            }
+            
+            // Show loading state
+            const btn = document.querySelector('.submit-btn');
+            btn.textContent = 'Submitting...';
+            btn.disabled = true;
+        });
+    </script>
+</body>
+</html>
+
