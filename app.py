@@ -78,7 +78,14 @@ def generate_ccew():
         session_id = str(uuid.uuid4())
         
         # Extract custom fields from SimPro job data
-        custom_fields = simpro_data.get('custom_fields', {})
+        custom_fields_array = simpro_data.get('custom_fields_array', [])
+        
+        # Helper function to find custom field value by name
+        def get_custom_field(field_name):
+            for field in custom_fields_array:
+                if field.get('Name') == field_name:
+                    return field.get('Value', '')
+            return ''
         
         # Split technician name
         tech_name = simpro_data.get('technician_name', '').split()
@@ -90,32 +97,32 @@ def generate_ccew():
             # Installation Address
             'serial_no': str(simpro_data.get('job_id', '')),
             'property_name': simpro_data.get('site_name', ''),
-            'install_street_number': custom_fields.get('Install Street Number', ''),
-            'install_street_name': custom_fields.get('Install Street Name', ''),
-            'install_suburb': custom_fields.get('Install Suburb', ''),
-            'install_postcode': custom_fields.get('Install Postcode', ''),
+            'install_street_number': get_custom_field('Install Street Number'),
+            'install_street_name': get_custom_field('Install Street Name'),
+            'install_suburb': get_custom_field('Install Suburb'),
+            'install_postcode': get_custom_field('Install Postcode'),
             
             # Customer Details
-            'customer_first_name': custom_fields.get('Customer First Name', ''),
-            'customer_last_name': custom_fields.get('Customer Last Name', ''),
+            'customer_first_name': get_custom_field('Customer First Name'),
+            'customer_last_name': get_custom_field('Customer Last Name'),
             'customer_company_name': simpro_data.get('customer_company_name', ''),
-            'customer_street_number': custom_fields.get('Customer Street Number', ''),
-            'customer_street_name': custom_fields.get('Customer Street Name', ''),
-            'customer_suburb': custom_fields.get('Customer Suburb', ''),
-            'customer_state': custom_fields.get('Customer State', ''),
-            'customer_postcode': custom_fields.get('Customer Postcode', ''),
+            'customer_street_number': get_custom_field('Customer Street Number'),
+            'customer_street_name': get_custom_field('Customer Street Name'),
+            'customer_suburb': get_custom_field('Customer Suburb'),
+            'customer_state': get_custom_field('Customer State'),
+            'customer_postcode': get_custom_field('Customer Postcode'),
             
             # Installer (from custom fields)
             'installer_first_name': tech_first,
             'installer_last_name': tech_last,
-            'installer_license_no': custom_fields.get('Tech Licence Number', ''),
-            'installer_license_expiry': custom_fields.get('Tech License Expiry', ''),
+            'installer_license_no': get_custom_field('Tech Licence Number'),
+            'installer_license_expiry': get_custom_field('Tech License Expiry'),
             
             # Tester (same as installer)
             'tester_first_name': tech_first,
             'tester_last_name': tech_last,
-            'tester_license_no': custom_fields.get('Tech Licence Number', ''),
-            'tester_license_expiry': custom_fields.get('Tech License Expiry', ''),
+            'tester_license_no': get_custom_field('Tech Licence Number'),
+            'tester_license_expiry': get_custom_field('Tech License Expiry'),
             
             # Signature
             'signature': f"{tech_first} {tech_last}"
@@ -271,4 +278,3 @@ def submit_ccew():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
-
