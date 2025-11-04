@@ -78,7 +78,18 @@ def generate_ccew():
         session_id = str(uuid.uuid4())
         
         # Extract custom fields from SimPro job data
-        custom_fields_array = simpro_data.get('custom_fields_array', [])
+        custom_fields_raw = simpro_data.get('custom_fields_array', [])
+        
+        # Handle both array format and nested CustomField object format
+        custom_fields_array = []
+        if isinstance(custom_fields_raw, dict):
+            # If it's a dict with CustomField keys, extract the values
+            for key, value in custom_fields_raw.items():
+                if isinstance(value, dict) and 'Name' in value:
+                    custom_fields_array.append(value)
+        elif isinstance(custom_fields_raw, list):
+            # If it's already an array, use it directly
+            custom_fields_array = custom_fields_raw
         
         # Helper function to find custom field value by name
         def get_custom_field(field_name):
