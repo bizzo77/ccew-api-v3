@@ -174,9 +174,14 @@ def generate_ccew():
         })
     
     except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"ERROR in generate_ccew: {str(e)}")
+        print(f"Full traceback: {error_details}")
         return jsonify({
             "success": False,
-            "error": str(e)
+            "error": str(e),
+            "traceback": error_details
         }), 500
 
 @app.route('/form/<session_id>', methods=['GET'])
@@ -270,9 +275,14 @@ def submit_ccew():
         })
     
     except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"ERROR in generate_ccew: {str(e)}")
+        print(f"Full traceback: {error_details}")
         return jsonify({
             "success": False,
-            "error": str(e)
+            "error": str(e),
+            "traceback": error_details
         }), 500
 
 if __name__ == '__main__':
