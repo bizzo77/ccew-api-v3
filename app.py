@@ -1,8 +1,9 @@
 import os
 import json
 import uuid
+import sqlite3
 from datetime import datetime
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, g
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
@@ -15,9 +16,7 @@ from email import encoders
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'ccew-secret-key-2025')
-
-# In-memory session storage (use database in production)
-sessions = {}
+DATABASE = '/tmp/ccew_sessions.db'
 
 # Hardcoded company data
 COMPANY_DATA = {
@@ -30,12 +29,88 @@ COMPANY_DATA = {
     'office_phone': '47068270'
 }
 
+def get_db():
+    """Get database connection"""
+    db = getattr(g, '_database', None)
+    if db is None:
+        db = g._database = sqlite3.connect(DATABASE)
+        db.row_factory = sqlite3.Row
+    return db
+
+@app.teardown_appcontext
+def close_connection(exception):
+    """Close database connection"""
+    db = getattr(g, '_database', None)
+    if db is not None:
+        db.close()
+
+def init_db():
+    """Initialize the database"""
+    with app.app_context():
+        db = get_db()
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS sessions (
+                session_id TEXT PRIMARY KEY,
+                simpro_data TEXT,
+                prefilled_data TEXT,
+                mobile_data TEXT,
+                created_at TEXT,
+                status TEXT
+            )
+        ''')
+        db.commit()
+
+def save_session(session_id, simpro_data, prefilled_data):
+    """Save a new session to database"""
+    db = get_db()
+    db.execute('''
+        INSERT INTO sessions (session_id, simpro_data, prefilled_data, mobile_data, created_at, status)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (
+        session_id,
+        json.dumps(simpro_data),
+        json.dumps(prefilled_data),
+        json.dumps({}),
+        datetime.now().isoformat(),
+        'pending'
+    ))
+    db.commit()
+
+def get_session(session_id):
+    """Get session from database"""
+    db = get_db()
+    cursor = db.execute('SELECT * FROM sessions WHERE session_id = ?', (session_id,))
+    row = cursor.fetchone()
+    if row:
+        return {
+            'session_id': row['session_id'],
+            'simpro_data': json.loads(row['simpro_data']),
+            'prefilled_data': json.loads(row['prefilled_data']),
+            'mobile_data': json.loads(row['mobile_data']),
+            'created_at': row['created_at'],
+            'status': row['status']
+        }
+    return None
+
+def update_session(session_id, mobile_data):
+    """Update session with mobile data"""
+    db = get_db()
+    db.execute('''
+        UPDATE sessions 
+        SET mobile_data = ?, status = ?
+        WHERE session_id = ?
+    ''', (json.dumps(mobile_data), 'submitted', session_id))
+    db.commit()
+
+# Initialize database on startup
+init_db()
+
 @app.route('/')
 def index():
     return jsonify({
         "status": "online",
         "service": "CCEW API v3",
-        "version": "3.0.1",
+        "version": "3.0.2",
         "endpoints": {
             "generate": "/api/ccew/generate (POST)",
             "form": "/form/<session_id> (GET)",
@@ -47,29 +122,6 @@ def index():
 def generate_ccew():
     """
     Generate a new CCEW form session from SimPro job data
-    
-    Expected input from Make.com:
-    {
-        "job_id": 3015,
-        "site_name": "Level 2, 121 Walker Street North Sydney",
-        "customer_company_name": "Proform Electrical",
-        "technician_name": "Karl Knopp",
-        "custom_fields": {
-            "Tech Licence Number": "1234567",
-            "Tech License Expiry": "2032-11-30",
-            "Install Street Number": "77",
-            "Install Street Name": "Seventy Seven St",
-            "Install Suburb": "Newport",
-            "Install Postcode": "2106",
-            "Customer First Name": "Jim",
-            "Customer Last Name": "Badans",
-            "Customer Street Number": "58",
-            "Customer Street Name": "Grandview St",
-            "Customer Suburb": "Mona Vale",
-            "Customer State": "NSW",
-            "Customer Postcode": "2105"
-        }
-    }
     """
     # Log incoming request details
     print(f"\n{'='*80}")
@@ -202,14 +254,8 @@ def generate_ccew():
         # Combine AUTO and HARDCODE fields
         prefilled_data = {**auto_fields, **hardcode_fields}
         
-        # Store session data
-        sessions[session_id] = {
-            'simpro_data': simpro_data,
-            'prefilled_data': prefilled_data,
-            'created_at': datetime.now().isoformat(),
-            'status': 'pending',
-            'mobile_data': {}  # Will be filled by tech on mobile form
-        }
+        # Save session to database
+        save_session(session_id, simpro_data, prefilled_data)
         
         # Return form URL
         form_url = f"{request.host_url}form/{session_id}"
@@ -236,10 +282,10 @@ def generate_ccew():
 def show_form(session_id):
     """Display the CCEW form with pre-filled and editable fields"""
     
-    if session_id not in sessions:
+    session = get_session(session_id)
+    if not session:
         return "Invalid or expired session", 404
     
-    session = sessions[session_id]
     prefilled = session['prefilled_data']
     
     # Render the complete CCEW form template
@@ -254,10 +300,9 @@ def submit_ccew():
     try:
         session_id = request.form.get('session_id')
         
-        if session_id not in sessions:
+        session = get_session(session_id)
+        if not session:
             return jsonify({"success": False, "error": "Invalid session"}), 404
-        
-        session = sessions[session_id]
         
         # Collect ALL mobile data from form
         mobile_data = {
@@ -273,131 +318,53 @@ def submit_ccew():
             'installation_description': request.form.get('installation_description', ''),
             'work_type': request.form.get('work_type', ''),
             'work_description': request.form.get('work_description', ''),
-            'work_date': request.form.get('work_date', ''),
+            
+            # Electrical Work Details
+            'supply_type': request.form.get('supply_type', ''),
+            'supply_phases': request.form.get('supply_phases', ''),
+            'supply_voltage': request.form.get('supply_voltage', ''),
+            'supply_frequency': request.form.get('supply_frequency', ''),
+            'earthing_type': request.form.get('earthing_type', ''),
+            'main_switch_rating': request.form.get('main_switch_rating', ''),
+            'rcd_rating': request.form.get('rcd_rating', ''),
+            'circuit_details': request.form.get('circuit_details', ''),
+            
+            # Testing Results
+            'insulation_test': request.form.get('insulation_test', ''),
+            'earth_continuity': request.form.get('earth_continuity', ''),
+            'polarity_test': request.form.get('polarity_test', ''),
+            'rcd_test': request.form.get('rcd_test', ''),
             
             # Installer Contact
-            'installer_mobile': request.form.get('installer_mobile', ''),
+            'installer_mobile_phone': request.form.get('installer_mobile_phone', ''),
             
             # Tester Contact
-            'tester_mobile': request.form.get('tester_mobile', ''),
+            'tester_mobile_phone': request.form.get('tester_mobile_phone', ''),
             
-            # Meter Details
-            'meter_register_no': request.form.get('meter_register_no', ''),
-            'meter_reading': request.form.get('meter_reading', ''),
-            'meter_tariff': request.form.get('meter_tariff', ''),
-            'load_increase': request.form.get('load_increase', ''),
-            'load_within_capacity': request.form.get('load_within_capacity', ''),
-            'work_connected': request.form.get('work_connected', ''),
-            
-            # Test Report
-            'test_earthing': request.form.get('test_earthing', ''),
-            'test_rcd': request.form.get('test_rcd', ''),
-            'test_insulation': request.form.get('test_insulation', ''),
-            'test_visual': request.form.get('test_visual', ''),
-            'test_polarity': request.form.get('test_polarity', ''),
-            'test_standalone': request.form.get('test_standalone', ''),
-            'test_current': request.form.get('test_current', ''),
-            'test_fault_loop': request.form.get('test_fault_loop', ''),
-            'test_date': request.form.get('test_date', ''),
-            
-            # Submit CCEW
-            'energy_provider': request.form.get('energy_provider', ''),
-            'meter_provider_email': request.form.get('meter_provider_email', ''),
+            # Dates
+            'date_work_completed': request.form.get('date_work_completed', ''),
+            'date_work_tested': request.form.get('date_work_tested', '')
         }
         
         # Update session with mobile data
-        session['mobile_data'] = mobile_data
-        session['status'] = 'submitted'
-        session['submitted_at'] = datetime.now().isoformat()
+        update_session(session_id, mobile_data)
         
-        # Combine all data
-        complete_data = {**session['prefilled_data'], **mobile_data}
+        # Combine all data for email
+        all_data = {**session['prefilled_data'], **mobile_data}
         
-        # Send test email with form data
-        try:
-            import smtplib
-            from email.mime.text import MIMEText
-            from email.mime.multipart import MIMEMultipart
-            
-            # Format the complete data as readable HTML email
-            email_html = f"""
-            <html>
-            <head>
-                <style>
-                    body {{ font-family: Arial, sans-serif; line-height: 1.6; }}
-                    h2 {{ color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }}
-                    .section {{ margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 5px; }}
-                    .field {{ margin: 8px 0; }}
-                    .label {{ font-weight: bold; color: #555; }}
-                    .value {{ color: #000; }}
-                </style>
-            </head>
-            <body>
-                <h1>CCEW Form Submission - Job #{session['simpro_data'].get('job_id', 'N/A')}</h1>
-                
-                <div class="section">
-                    <h2>AUTO-FILLED DATA (from SimPro)</h2>
-            """
-            
-            for key, value in session['prefilled_data'].items():
-                email_html += f'<div class="field"><span class="label">{key}:</span> <span class="value">{value}</span></div>\n'
-            
-            email_html += """
-                </div>
-                <div class="section">
-                    <h2>TECHNICIAN-ENTERED DATA (from mobile form)</h2>
-            """
-            
-            for key, value in mobile_data.items():
-                if value:  # Only show fields that have values
-                    email_html += f'<div class="field"><span class="label">{key}:</span> <span class="value">{value}</span></div>\n'
-            
-            email_html += """
-                </div>
-            </body>
-            </html>
-            """
-            
-            # Send via Gmail SMTP (using app-specific password)
-            msg = MIMEMultipart('alternative')
-            msg['From'] = 'CCEW API <noreply@evolutionbc.com.au>'
-            msg['To'] = 'jimbadans@evolutionbc.com.au'
-            msg['Subject'] = f'[TEST] CCEW Form - Job #{session["simpro_data"].get("job_id", "N/A")}'
-            
-            msg.attach(MIMEText(email_html, 'html'))
-            
-            # Use Gmail SMTP
-            smtp_server = "smtp.gmail.com"
-            smtp_port = 587
-            smtp_user = os.environ.get('SMTP_USER', '')
-            smtp_pass = os.environ.get('SMTP_PASS', '')
-            
-            if smtp_user and smtp_pass:
-                server = smtplib.SMTP(smtp_server, smtp_port)
-                server.starttls()
-                server.login(smtp_user, smtp_pass)
-                server.send_message(msg)
-                server.quit()
-                print(f"✓ Email sent successfully to jimbadans@evolutionbc.com.au")
-            else:
-                print(f"⚠ SMTP credentials not configured - email not sent")
-                print(f"Email would have been sent to: jimbadans@evolutionbc.com.au")
-            
-        except Exception as email_error:
-            print(f"Email error (non-fatal): {str(email_error)}")
-            import traceback
-            print(traceback.format_exc())
+        # Send email notification
+        send_email_notification(session_id, all_data)
         
         return jsonify({
             "success": True,
-            "message": "CCEW submitted successfully. Email sent to jimbadans@evolutionbc.com.au for review.",
+            "message": "CCEW form submitted successfully",
             "session_id": session_id
         })
     
     except Exception as e:
         import traceback
         error_details = traceback.format_exc()
-        print(f"ERROR in generate_ccew: {str(e)}")
+        print(f"ERROR in submit_ccew: {str(e)}")
         print(f"Full traceback: {error_details}")
         return jsonify({
             "success": False,
@@ -405,6 +372,144 @@ def submit_ccew():
             "traceback": error_details
         }), 500
 
+
+def send_email_notification(session_id, form_data):
+    """Send email notification with form data"""
+    try:
+        # Email configuration
+        smtp_user = os.environ.get('SMTP_USER', 'jimbadans@evolutionbc.com.au')
+        smtp_pass = os.environ.get('SMTP_PASS', '')
+        
+        if not smtp_pass:
+            print("WARNING: SMTP_PASS not configured, skipping email")
+            return
+        
+        # Create message
+        msg = MIMEMultipart('alternative')
+        msg['From'] = smtp_user
+        msg['To'] = 'jimbadans@evolutionbc.com.au'
+        msg['Subject'] = f"[TEST] CCEW Form - Job #{form_data.get('serial_no', 'N/A')}"
+        
+        # Create HTML email body
+        html_body = f"""
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; }}
+                .section {{ margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 5px; }}
+                .section h2 {{ margin-top: 0; color: #333; }}
+                .field {{ margin: 5px 0; }}
+                .label {{ font-weight: bold; color: #555; }}
+                .value {{ color: #000; }}
+            </style>
+        </head>
+        <body>
+            <h1>CCEW Form Submission - TEST</h1>
+            
+            <div class="section">
+                <h2>Installation Address</h2>
+                <div class="field"><span class="label">Serial No:</span> <span class="value">{form_data.get('serial_no', '')}</span></div>
+                <div class="field"><span class="label">Property Name:</span> <span class="value">{form_data.get('property_name', '')}</span></div>
+                <div class="field"><span class="label">Street:</span> <span class="value">{form_data.get('install_street_number', '')} {form_data.get('install_street_name', '')}</span></div>
+                <div class="field"><span class="label">Suburb:</span> <span class="value">{form_data.get('install_suburb', '')}</span></div>
+                <div class="field"><span class="label">State:</span> <span class="value">{form_data.get('install_state', '')}</span></div>
+                <div class="field"><span class="label">Postcode:</span> <span class="value">{form_data.get('install_postcode', '')}</span></div>
+                <div class="field"><span class="label">Nearest Cross Street:</span> <span class="value">{form_data.get('nearest_cross_street', '')}</span></div>
+                <div class="field"><span class="label">Pit/Pillar/Pole No:</span> <span class="value">{form_data.get('pit_pillar_pole_no', '')}</span></div>
+                <div class="field"><span class="label">NMI:</span> <span class="value">{form_data.get('nmi', '')}</span></div>
+                <div class="field"><span class="label">Meter No:</span> <span class="value">{form_data.get('meter_no', '')}</span></div>
+                <div class="field"><span class="label">AEMO Provider ID:</span> <span class="value">{form_data.get('aemo_provider_id', '')}</span></div>
+            </div>
+            
+            <div class="section">
+                <h2>Customer Details</h2>
+                <div class="field"><span class="label">Name:</span> <span class="value">{form_data.get('customer_first_name', '')} {form_data.get('customer_last_name', '')}</span></div>
+                <div class="field"><span class="label">Company:</span> <span class="value">{form_data.get('customer_company_name', '')}</span></div>
+                <div class="field"><span class="label">Address:</span> <span class="value">{form_data.get('customer_street_number', '')} {form_data.get('customer_street_name', '')}, {form_data.get('customer_suburb', '')} {form_data.get('customer_state', '')} {form_data.get('customer_postcode', '')}</span></div>
+            </div>
+            
+            <div class="section">
+                <h2>Installation Details</h2>
+                <div class="field"><span class="label">Type:</span> <span class="value">{form_data.get('installation_type', '')}</span></div>
+                <div class="field"><span class="label">Description:</span> <span class="value">{form_data.get('installation_description', '')}</span></div>
+                <div class="field"><span class="label">Work Type:</span> <span class="value">{form_data.get('work_type', '')}</span></div>
+                <div class="field"><span class="label">Work Description:</span> <span class="value">{form_data.get('work_description', '')}</span></div>
+            </div>
+            
+            <div class="section">
+                <h2>Electrical Work Details</h2>
+                <div class="field"><span class="label">Supply Type:</span> <span class="value">{form_data.get('supply_type', '')}</span></div>
+                <div class="field"><span class="label">Phases:</span> <span class="value">{form_data.get('supply_phases', '')}</span></div>
+                <div class="field"><span class="label">Voltage:</span> <span class="value">{form_data.get('supply_voltage', '')}</span></div>
+                <div class="field"><span class="label">Frequency:</span> <span class="value">{form_data.get('supply_frequency', '')}</span></div>
+                <div class="field"><span class="label">Earthing Type:</span> <span class="value">{form_data.get('earthing_type', '')}</span></div>
+                <div class="field"><span class="label">Main Switch Rating:</span> <span class="value">{form_data.get('main_switch_rating', '')}</span></div>
+                <div class="field"><span class="label">RCD Rating:</span> <span class="value">{form_data.get('rcd_rating', '')}</span></div>
+                <div class="field"><span class="label">Circuit Details:</span> <span class="value">{form_data.get('circuit_details', '')}</span></div>
+            </div>
+            
+            <div class="section">
+                <h2>Testing Results</h2>
+                <div class="field"><span class="label">Insulation Test:</span> <span class="value">{form_data.get('insulation_test', '')}</span></div>
+                <div class="field"><span class="label">Earth Continuity:</span> <span class="value">{form_data.get('earth_continuity', '')}</span></div>
+                <div class="field"><span class="label">Polarity Test:</span> <span class="value">{form_data.get('polarity_test', '')}</span></div>
+                <div class="field"><span class="label">RCD Test:</span> <span class="value">{form_data.get('rcd_test', '')}</span></div>
+            </div>
+            
+            <div class="section">
+                <h2>Installer Details</h2>
+                <div class="field"><span class="label">Name:</span> <span class="value">{form_data.get('installer_first_name', '')} {form_data.get('installer_last_name', '')}</span></div>
+                <div class="field"><span class="label">License No:</span> <span class="value">{form_data.get('installer_license_no', '')}</span></div>
+                <div class="field"><span class="label">License Expiry:</span> <span class="value">{form_data.get('installer_license_expiry', '')}</span></div>
+                <div class="field"><span class="label">Mobile:</span> <span class="value">{form_data.get('installer_mobile_phone', '')}</span></div>
+                <div class="field"><span class="label">Address:</span> <span class="value">{form_data.get('installer_street_number', '')} {form_data.get('installer_street_name', '')}, {form_data.get('installer_suburb', '')} {form_data.get('installer_state', '')} {form_data.get('installer_postcode', '')}</span></div>
+                <div class="field"><span class="label">Email:</span> <span class="value">{form_data.get('installer_email', '')}</span></div>
+                <div class="field"><span class="label">Office Phone:</span> <span class="value">{form_data.get('installer_office_phone', '')}</span></div>
+            </div>
+            
+            <div class="section">
+                <h2>Tester Details</h2>
+                <div class="field"><span class="label">Name:</span> <span class="value">{form_data.get('tester_first_name', '')} {form_data.get('tester_last_name', '')}</span></div>
+                <div class="field"><span class="label">License No:</span> <span class="value">{form_data.get('tester_license_no', '')}</span></div>
+                <div class="field"><span class="label">License Expiry:</span> <span class="value">{form_data.get('tester_license_expiry', '')}</span></div>
+                <div class="field"><span class="label">Mobile:</span> <span class="value">{form_data.get('tester_mobile_phone', '')}</span></div>
+                <div class="field"><span class="label">Address:</span> <span class="value">{form_data.get('tester_street_number', '')} {form_data.get('tester_street_name', '')}, {form_data.get('tester_suburb', '')} {form_data.get('tester_state', '')} {form_data.get('tester_postcode', '')}</span></div>
+                <div class="field"><span class="label">Email:</span> <span class="value">{form_data.get('tester_email', '')}</span></div>
+            </div>
+            
+            <div class="section">
+                <h2>Dates</h2>
+                <div class="field"><span class="label">Work Completed:</span> <span class="value">{form_data.get('date_work_completed', '')}</span></div>
+                <div class="field"><span class="label">Work Tested:</span> <span class="value">{form_data.get('date_work_tested', '')}</span></div>
+            </div>
+            
+            <div class="section">
+                <h2>Signature</h2>
+                <div class="field"><span class="label">Signed by:</span> <span class="value">{form_data.get('signature', '')}</span></div>
+            </div>
+            
+            <p><em>This is a TEST email. No action required.</em></p>
+        </body>
+        </html>
+        """
+        
+        # Attach HTML body
+        msg.attach(MIMEText(html_body, 'html'))
+        
+        # Send email via Gmail SMTP
+        with smtplib.SMTP('smtp.gmail.com', 587) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_pass)
+            server.send_message(msg)
+        
+        print(f"Email sent successfully for session {session_id}")
+        
+    except Exception as e:
+        print(f"ERROR sending email: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
+
+
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
+
