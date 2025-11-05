@@ -72,7 +72,19 @@ def generate_ccew():
     }
     """
     try:
-        simpro_data = request.json
+        # Handle both JSON and raw data from Make.com
+        try:
+            simpro_data = request.json
+        except Exception as json_error:
+            # If request.json fails, try parsing raw data
+            try:
+                simpro_data = json.loads(request.data.decode('utf-8'))
+            except Exception as parse_error:
+                return jsonify({
+                    "success": False,
+                    "error": f"Failed to parse request data: {str(json_error)}, {str(parse_error)}",
+                    "received_data": request.data.decode('utf-8')[:500]
+                }), 400
         
         # Create unique session ID
         session_id = str(uuid.uuid4())
