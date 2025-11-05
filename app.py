@@ -496,8 +496,8 @@ def send_email_notification(session_id, form_data):
         # Attach HTML body
         msg.attach(MIMEText(html_body, 'html'))
         
-        # Send email via Gmail SMTP
-        with smtplib.SMTP('smtp.gmail.com', 587) as server:
+        # Send email via Gmail SMTP with timeout
+        with smtplib.SMTP('smtp.gmail.com', 587, timeout=10) as server:
             server.starttls()
             server.login(smtp_user, smtp_pass)
             server.send_message(msg)
