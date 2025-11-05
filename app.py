@@ -8,11 +8,8 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 import io
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.base import MIMEBase
-from email import encoders
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail, Email, To, Content
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'ccew-secret-key-2025')
@@ -376,19 +373,16 @@ def submit_ccew():
 def send_email_notification(session_id, form_data):
     """Send email notification with form data"""
     try:
-        # Email configuration
-        smtp_user = os.environ.get('SMTP_USER', 'jimbadans@evolutionbc.com.au')
-        smtp_pass = os.environ.get('SMTP_PASS', '')
+        # SendGrid configuration
+        sendgrid_api_key = os.environ.get('SENDGRID_API_KEY', '')
+        from_email = 'jimbadans@evolutionbc.com.au'
+        to_email = 'jimbadans@evolutionbc.com.au'
         
-        if not smtp_pass:
-            print("WARNING: SMTP_PASS not configured, skipping email")
+        if not sendgrid_api_key:
+            print("WARNING: SENDGRID_API_KEY not configured, skipping email")
             return
         
-        # Create message
-        msg = MIMEMultipart('alternative')
-        msg['From'] = smtp_user
-        msg['To'] = 'jimbadans@evolutionbc.com.au'
-        msg['Subject'] = f"[TEST] CCEW Form - Job #{form_data.get('serial_no', 'N/A')}"
+        subject = f"[TEST] CCEW Form - Job #{form_data.get('serial_no', 'N/A')}"
         
         # Create HTML email body
         html_body = f"""
@@ -493,16 +487,19 @@ def send_email_notification(session_id, form_data):
         </html>
         """
         
-        # Attach HTML body
-        msg.attach(MIMEText(html_body, 'html'))
+        # Send email via SendGrid API
+        message = Mail(
+            from_email=from_email,
+            to_emails=to_email,
+            subject=subject,
+            html_content=html_body
+        )
         
-        # Send email via Gmail SMTP with timeout
-        with smtplib.SMTP('smtp.gmail.com', 587, timeout=10) as server:
-            server.starttls()
-            server.login(smtp_user, smtp_pass)
-            server.send_message(msg)
+        sg = SendGridAPIClient(sendgrid_api_key)
+        response = sg.send(message)
         
         print(f"Email sent successfully for session {session_id}")
+        print(f"SendGrid response status: {response.status_code}")
         
     except Exception as e:
         print(f"ERROR sending email: {str(e)}")
