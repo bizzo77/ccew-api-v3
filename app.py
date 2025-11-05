@@ -8,8 +8,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 import io
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail, Email, To, Content
+import requests
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'ccew-secret-key-2025')
@@ -371,18 +370,14 @@ def submit_ccew():
 
 
 def send_email_notification(session_id, form_data):
-    """Send email notification with form data"""
+    """Send form data to Make.com webhook for email processing"""
     try:
-        # SendGrid configuration
-        sendgrid_api_key = os.environ.get('SENDGRID_API_KEY', '')
-        from_email = 'jimbadans@evolutionbc.com.au'
-        to_email = 'jimbadans@evolutionbc.com.au'
+        # Make.com webhook URL for email sending
+        webhook_url = os.environ.get('MAKECOM_EMAIL_WEBHOOK', '')
         
-        if not sendgrid_api_key:
-            print("WARNING: SENDGRID_API_KEY not configured, skipping email")
+        if not webhook_url:
+            print("WARNING: MAKECOM_EMAIL_WEBHOOK not configured, skipping email")
             return
-        
-        subject = f"[TEST] CCEW Form - Job #{form_data.get('serial_no', 'N/A')}"
         
         # Create HTML email body
         html_body = f"""
@@ -487,19 +482,21 @@ def send_email_notification(session_id, form_data):
         </html>
         """
         
-        # Send email via SendGrid API
-        message = Mail(
-            from_email=from_email,
-            to_emails=to_email,
-            subject=subject,
-            html_content=html_body
-        )
+        # Send form data to Make.com webhook
+        import requests
         
-        sg = SendGridAPIClient(sendgrid_api_key)
-        response = sg.send(message)
+        payload = {
+            'session_id': session_id,
+            'subject': f"[TEST] CCEW Form - Job #{form_data.get('serial_no', 'N/A')}",
+            'to_email': 'jimbadans@evolutionbc.com.au',
+            'html_content': html_body,
+            'form_data': form_data
+        }
         
-        print(f"Email sent successfully for session {session_id}")
-        print(f"SendGrid response status: {response.status_code}")
+        response = requests.post(webhook_url, json=payload, timeout=10)
+        
+        print(f"Email data sent to Make.com for session {session_id}")
+        print(f"Make.com webhook response status: {response.status_code}")
         
     except Exception as e:
         print(f"ERROR sending email: {str(e)}")
