@@ -112,8 +112,21 @@ def generate_ccew():
                 if isinstance(value, dict) and 'Name' in value:
                     custom_fields_array.append(value)
         elif isinstance(custom_fields_raw, list):
-            # If it's already an array, use it directly
-            custom_fields_array = custom_fields_raw
+            # If it's an array, normalize the structure
+            for item in custom_fields_raw:
+                if isinstance(item, dict):
+                    # Handle structure: {"CustomField": {"Name": "...", ...}, "Value": "..."}
+                    if 'CustomField' in item and 'Value' in item:
+                        custom_field = item['CustomField']
+                        custom_fields_array.append({
+                            'Name': custom_field.get('Name', ''),
+                            'Value': item.get('Value', '')
+                        })
+                    # Handle structure: {"Name": "...", "Value": "..."}
+                    elif 'Name' in item:
+                        custom_fields_array.append(item)
+        
+        print(f"Parsed custom fields: {custom_fields_array}")
         
         # Helper function to find custom field value by name
         def get_custom_field(field_name):
