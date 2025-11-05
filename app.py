@@ -78,7 +78,11 @@ def generate_ccew():
         except Exception as json_error:
             # If request.json fails, try parsing raw data
             try:
-                simpro_data = json.loads(request.data.decode('utf-8'))
+                raw_data = request.data.decode('utf-8')
+                # Try to unescape if it's double-escaped
+                if raw_data.startswith('"') and raw_data.endswith('"'):
+                    raw_data = raw_data[1:-1].replace('\\"', '"').replace('\\\\', '\\')
+                simpro_data = json.loads(raw_data)
             except Exception as parse_error:
                 return jsonify({
                     "success": False,
