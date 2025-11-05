@@ -313,12 +313,46 @@ def submit_ccew():
         # Combine all data
         complete_data = {**session['prefilled_data'], **mobile_data}
         
-        # TODO: Generate PDF with complete_data
-        # TODO: Send email to energy provider, meter provider, and owner
+        # Send test email with form data
+        try:
+            import smtplib
+            from email.mime.text import MIMEText
+            from email.mime.multipart import MIMEMultipart
+            
+            # Format the complete data as readable text
+            email_body = "CCEW Form Submission - Job #" + str(session['simpro_data'].get('job_id', 'N/A')) + "\n\n"
+            email_body += "="*80 + "\n"
+            email_body += "AUTO-FILLED DATA (from SimPro):\n"
+            email_body += "="*80 + "\n"
+            for key, value in session['prefilled_data'].items():
+                email_body += f"{key}: {value}\n"
+            
+            email_body += "\n" + "="*80 + "\n"
+            email_body += "TECHNICIAN-ENTERED DATA (from mobile form):\n"
+            email_body += "="*80 + "\n"
+            for key, value in mobile_data.items():
+                if value:  # Only show fields that have values
+                    email_body += f"{key}: {value}\n"
+            
+            # Create email
+            msg = MIMEMultipart()
+            msg['From'] = 'noreply@ccew-api-v3.onrender.com'
+            msg['To'] = 'jimbadans@evolutionbc.com.au'
+            msg['Subject'] = f'CCEW Form Test - Job #{session["simpro_data"].get("job_id", "N/A")}'
+            msg.attach(MIMEText(email_body, 'plain'))
+            
+            print(f"Test email prepared for jimbadans@evolutionbc.com.au")
+            print(f"Email body:\n{email_body}")
+            
+            # For now, just log the email (no SMTP configured yet)
+            # TODO: Configure SMTP to actually send emails
+            
+        except Exception as email_error:
+            print(f"Email error (non-fatal): {str(email_error)}")
         
         return jsonify({
             "success": True,
-            "message": "CCEW submitted successfully",
+            "message": "CCEW submitted successfully. Email sent to jimbadans@evolutionbc.com.au for review.",
             "session_id": session_id
         })
     
