@@ -319,36 +319,74 @@ def submit_ccew():
             from email.mime.text import MIMEText
             from email.mime.multipart import MIMEMultipart
             
-            # Format the complete data as readable text
-            email_body = "CCEW Form Submission - Job #" + str(session['simpro_data'].get('job_id', 'N/A')) + "\n\n"
-            email_body += "="*80 + "\n"
-            email_body += "AUTO-FILLED DATA (from SimPro):\n"
-            email_body += "="*80 + "\n"
-            for key, value in session['prefilled_data'].items():
-                email_body += f"{key}: {value}\n"
+            # Format the complete data as readable HTML email
+            email_html = f"""
+            <html>
+            <head>
+                <style>
+                    body {{ font-family: Arial, sans-serif; line-height: 1.6; }}
+                    h2 {{ color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }}
+                    .section {{ margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 5px; }}
+                    .field {{ margin: 8px 0; }}
+                    .label {{ font-weight: bold; color: #555; }}
+                    .value {{ color: #000; }}
+                </style>
+            </head>
+            <body>
+                <h1>CCEW Form Submission - Job #{session['simpro_data'].get('job_id', 'N/A')}</h1>
+                
+                <div class="section">
+                    <h2>AUTO-FILLED DATA (from SimPro)</h2>
+            """
             
-            email_body += "\n" + "="*80 + "\n"
-            email_body += "TECHNICIAN-ENTERED DATA (from mobile form):\n"
-            email_body += "="*80 + "\n"
+            for key, value in session['prefilled_data'].items():
+                email_html += f'<div class="field"><span class="label">{key}:</span> <span class="value">{value}</span></div>\n'
+            
+            email_html += """
+                </div>
+                <div class="section">
+                    <h2>TECHNICIAN-ENTERED DATA (from mobile form)</h2>
+            """
+            
             for key, value in mobile_data.items():
                 if value:  # Only show fields that have values
-                    email_body += f"{key}: {value}\n"
+                    email_html += f'<div class="field"><span class="label">{key}:</span> <span class="value">{value}</span></div>\n'
             
-            # Create email
-            msg = MIMEMultipart()
-            msg['From'] = 'noreply@ccew-api-v3.onrender.com'
+            email_html += """
+                </div>
+            </body>
+            </html>
+            """
+            
+            # Send via Gmail SMTP (using app-specific password)
+            msg = MIMEMultipart('alternative')
+            msg['From'] = 'CCEW API <noreply@evolutionbc.com.au>'
             msg['To'] = 'jimbadans@evolutionbc.com.au'
-            msg['Subject'] = f'CCEW Form Test - Job #{session["simpro_data"].get("job_id", "N/A")}'
-            msg.attach(MIMEText(email_body, 'plain'))
+            msg['Subject'] = f'[TEST] CCEW Form - Job #{session["simpro_data"].get("job_id", "N/A")}'
             
-            print(f"Test email prepared for jimbadans@evolutionbc.com.au")
-            print(f"Email body:\n{email_body}")
+            msg.attach(MIMEText(email_html, 'html'))
             
-            # For now, just log the email (no SMTP configured yet)
-            # TODO: Configure SMTP to actually send emails
+            # Use Gmail SMTP
+            smtp_server = "smtp.gmail.com"
+            smtp_port = 587
+            smtp_user = os.environ.get('SMTP_USER', '')
+            smtp_pass = os.environ.get('SMTP_PASS', '')
+            
+            if smtp_user and smtp_pass:
+                server = smtplib.SMTP(smtp_server, smtp_port)
+                server.starttls()
+                server.login(smtp_user, smtp_pass)
+                server.send_message(msg)
+                server.quit()
+                print(f"✓ Email sent successfully to jimbadans@evolutionbc.com.au")
+            else:
+                print(f"⚠ SMTP credentials not configured - email not sent")
+                print(f"Email would have been sent to: jimbadans@evolutionbc.com.au")
             
         except Exception as email_error:
             print(f"Email error (non-fatal): {str(email_error)}")
+            import traceback
+            print(traceback.format_exc())
         
         return jsonify({
             "success": True,
