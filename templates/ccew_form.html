@@ -473,15 +473,6 @@
                 </select>
             </div>
             
-            <div class="field-group">
-                <label>Meter Provider's Email *</label>
-                <input type="email" name="meter_provider_email" placeholder="Enter meter provider email" required>
-            </div>
-            
-            <div class="field-group">
-                <label>Confirm Meter Provider's Email *</label>
-                <input type="email" name="meter_provider_email_confirm" placeholder="Confirm meter provider email" required>
-            </div>
             
             <div class="info-box" style="margin-top: 20px;">
                 <p><strong>Signature:</strong> {{ signature }}</p>
@@ -494,15 +485,6 @@
     
     <script>
         document.getElementById('ccewForm').addEventListener('submit', function(e) {
-            const email = document.querySelector('input[name="meter_provider_email"]').value;
-            const confirm = document.querySelector('input[name="meter_provider_email_confirm"]').value;
-            
-            if (email !== confirm) {
-                e.preventDefault();
-                alert('Meter provider email addresses do not match!');
-                return false;
-            }
-            
             // Show loading state
             const btn = document.querySelector('.submit-btn');
             btn.textContent = 'Submitting...';
