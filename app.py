@@ -71,6 +71,14 @@ def generate_ccew():
         }
     }
     """
+    # Log incoming request details
+    print(f"\n{'='*80}")
+    print(f"INCOMING REQUEST to /api/ccew/generate")
+    print(f"Content-Type: {request.content_type}")
+    print(f"Headers: {dict(request.headers)}")
+    print(f"Raw data (first 500 chars): {request.data.decode('utf-8')[:500]}")
+    print(f"{'='*80}\n")
+    
     try:
         # Handle both JSON and raw data from Make.com
         try:
