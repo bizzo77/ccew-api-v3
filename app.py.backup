@@ -9,8 +9,6 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 import io
 import requests
-import base64
-from pdf_generator import generate_ccew_pdf, get_pdf_filename
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'ccew-secret-key-2025')
@@ -350,15 +348,14 @@ def submit_ccew():
         # Combine all data for email
         all_data = {**session['prefilled_data'], **mobile_data}
         
-        # Get energy provider
-        energy_provider = request.form.get('energy_provider', '')
-        all_data['energy_provider'] = energy_provider
-        
         # Send email notification
         send_email_notification(session_id, all_data)
         
-        # Return HTML success page
-        return render_template('success.html', job_number=all_data.get('serial_no', 'N/A'))
+        return jsonify({
+            "success": True,
+            "message": "CCEW form submitted successfully",
+            "session_id": session_id
+        })
     
     except Exception as e:
         import traceback
@@ -485,59 +482,14 @@ def send_email_notification(session_id, form_data):
         </html>
         """
         
-        # Generate PDF
-        pdf_base64 = generate_ccew_pdf(form_data)
-        pdf_filename = get_pdf_filename(form_data)
-        
-        # Create professional email body
-        job_no = form_data.get('serial_no', 'N/A')
-        property_name = form_data.get('property_name', 'N/A')
-        install_address = f"{form_data.get('install_street_number', '')} {form_data.get('install_street_name', '')}, {form_data.get('install_suburb', '')} {form_data.get('install_state', '')} {form_data.get('install_postcode', '')}"
-        customer_name = f"{form_data.get('customer_first_name', '')} {form_data.get('customer_last_name', '')}"
-        tech_name = f"{form_data.get('installer_first_name', '')} {form_data.get('installer_last_name', '')}"
-        date_completed = form_data.get('date_work_completed', 'N/A')
-        energy_provider = form_data.get('energy_provider', '')
-        
-        email_body = f"""<html>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-    <p>Dear Energy Provider,</p>
-    
-    <p>Please find attached the Certificate of Compliance for Electrical Work (CCEW) for the following job:</p>
-    
-    <table style="margin: 20px 0; border-collapse: collapse;">
-        <tr><td style="padding: 5px 10px; font-weight: bold;">Job Number:</td><td style="padding: 5px 10px;">{job_no}</td></tr>
-        <tr><td style="padding: 5px 10px; font-weight: bold;">Property:</td><td style="padding: 5px 10px;">{property_name}</td></tr>
-        <tr><td style="padding: 5px 10px; font-weight: bold;">Address:</td><td style="padding: 5px 10px;">{install_address}</td></tr>
-        <tr><td style="padding: 5px 10px; font-weight: bold;">Customer:</td><td style="padding: 5px 10px;">{customer_name}</td></tr>
-        <tr><td style="padding: 5px 10px; font-weight: bold;">Technician:</td><td style="padding: 5px 10px;">{tech_name}</td></tr>
-        <tr><td style="padding: 5px 10px; font-weight: bold;">Date Completed:</td><td style="padding: 5px 10px;">{date_completed}</td></tr>
-    </table>
-    
-    <p>The attached PDF contains the complete CCEW form with all required details and test results.</p>
-    
-    <p>If you have any questions, please contact:</p>
-    <p style="margin-left: 20px;">
-        <strong>Proform Electrical</strong><br>
-        Phone: 47068270<br>
-        Email: admin@proformelec.com.au
-    </p>
-    
-    <p>Kind regards,<br>
-    <strong>Proform Electrical</strong></p>
-</body>
-</html>"""
-        
         # Send form data to Make.com webhook
         import requests
         
         payload = {
             'session_id': session_id,
-            'subject': f"CCEW Form Submission - Job #{job_no} - {customer_name}",
+            'subject': f"[TEST] CCEW Form - Job #{form_data.get('serial_no', 'N/A')}",
             'to_email': 'jimbadans@evolutionbc.com.au',
-            'email_body': email_body,
-            'pdf_data': pdf_base64,
-            'pdf_filename': pdf_filename,
-            'energy_provider': energy_provider,
+            'html_content': html_body,
             'form_data': form_data
         }
         
