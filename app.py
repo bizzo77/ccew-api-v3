@@ -489,32 +489,7 @@ def send_email_notification(session_id, form_data):
         pdf_base64 = generate_ccew_pdf(form_data)
         pdf_filename = get_pdf_filename(form_data)
         
-        # Decode base64 to binary and save temporarily
-        pdf_binary = base64.b64decode(pdf_base64)
-        temp_pdf_path = f"/tmp/{pdf_filename}"
-        with open(temp_pdf_path, 'wb') as f:
-            f.write(pdf_binary)
-        
-        # Upload PDF to get public URL
-        import subprocess
-        result = subprocess.run(
-            ['manus-upload-file', temp_pdf_path],
-            capture_output=True,
-            text=True
-        )
-        
-        # Extract URL from output
-        pdf_url = ''
-        for line in result.stdout.split('\n'):
-            if 'CDN URL:' in line:
-                pdf_url = line.split('CDN URL:')[1].strip()
-                break
-        
-        if not pdf_url:
-            print(f"WARNING: Failed to upload PDF. Output: {result.stdout}")
-            print(f"Error: {result.stderr}")
-            # Fallback: still send base64 data
-            pdf_url = ''
+        # Send PDF data directly as base64 - Make.com will handle it
         
         # Create professional email body
         job_no = form_data.get('serial_no', 'N/A')
@@ -562,7 +537,7 @@ def send_email_notification(session_id, form_data):
             'subject': f"CCEW Form Submission - Job #{job_no} - {customer_name}",
             'to_email': 'jimbadans@evolutionbc.com.au',
             'email_body': email_body,
-            'pdf_url': pdf_url,
+            'pdf_data': pdf_base64,
             'pdf_filename': pdf_filename,
             'energy_provider': energy_provider,
             'form_data': form_data
