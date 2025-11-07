@@ -3,7 +3,7 @@ import json
 import uuid
 import sqlite3
 from datetime import datetime
-from flask import Flask, request, jsonify, render_template, g
+from flask import Flask, request, jsonify, render_template, g, send_file
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
@@ -489,7 +489,14 @@ def send_email_notification(session_id, form_data):
         pdf_base64 = generate_ccew_pdf(form_data)
         pdf_filename = get_pdf_filename(form_data)
         
-        # Send PDF data directly as base64 - Make.com will handle it
+        # Save PDF to temporary location for HTTP access
+        pdf_path = f"/tmp/{pdf_filename}"
+        pdf_bytes = base64.b64decode(pdf_base64)
+        with open(pdf_path, 'wb') as f:
+            f.write(pdf_bytes)
+        
+        # Create public URL for PDF
+        pdf_url = f"{request.host_url}pdfs/{pdf_filename}"
         
         # Create professional email body
         job_no = form_data.get('serial_no', 'N/A')
@@ -537,7 +544,7 @@ def send_email_notification(session_id, form_data):
             'subject': f"CCEW Form Submission - Job #{job_no} - {customer_name}",
             'to_email': 'jimbadans@evolutionbc.com.au',
             'email_body': email_body,
-            'pdf_data': pdf_base64,
+            'pdf_url': pdf_url,
             'pdf_filename': pdf_filename,
             'energy_provider': energy_provider,
             'form_data': form_data
@@ -552,6 +559,19 @@ def send_email_notification(session_id, form_data):
         print(f"ERROR sending email: {str(e)}")
         import traceback
         print(traceback.format_exc())
+
+
+@app.route('/pdfs/<filename>')
+def serve_pdf(filename):
+    """Serve PDF files from /tmp directory"""
+    try:
+        pdf_path = f"/tmp/{filename}"
+        if os.path.exists(pdf_path):
+            return send_file(pdf_path, mimetype='application/pdf', as_attachment=False)
+        else:
+            return jsonify({"error": "PDF not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == '__main__':
