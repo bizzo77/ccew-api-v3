@@ -108,7 +108,7 @@ def index():
     return jsonify({
         "status": "online",
         "service": "CCEW API v3",
-        "version": "3.0.2",
+        "version": "3.0.3",
         "endpoints": {
             "generate": "/api/ccew/generate (POST)",
             "form": "/form/<session_id> (GET)",
