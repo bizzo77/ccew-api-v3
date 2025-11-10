@@ -460,8 +460,118 @@
                 </div>
             </div>
             
-            <!-- SECTION 9: SUBMIT CCEW -->
-            <h2>9. Submit CCEW</h2>
+            <!-- SECTION 9: ELECTRICAL WORK DETAILS -->
+            <h2>9. Electrical Work Details</h2>
+            
+            <div class="row">
+                <div class="col">
+                    <div class="field-group">
+                        <label>Supply Type *</label>
+                        <select name="supply_type" required>
+                            <option value="">Select...</option>
+                            <option value="Single Phase">Single Phase</option>
+                            <option value="Three Phase">Three Phase</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="field-group">
+                        <label>Number of Phases *</label>
+                        <input type="text" name="supply_phases" placeholder="e.g., 1 or 3" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col">
+                    <div class="field-group">
+                        <label>Supply Voltage *</label>
+                        <input type="text" name="supply_voltage" placeholder="e.g., 230V or 400V" required>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="field-group">
+                        <label>Supply Frequency *</label>
+                        <input type="text" name="supply_frequency" placeholder="e.g., 50Hz" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="field-group">
+                <label>Earthing Type *</label>
+                <select name="earthing_type" required>
+                    <option value="">Select...</option>
+                    <option value="TN-C">TN-C (Combined protective earth and neutral)</option>
+                    <option value="TN-S">TN-S (Separate protective earth and neutral)</option>
+                    <option value="TN-C-S">TN-C-S (Combined and separate)</option>
+                    <option value="TT">TT (Direct connection to earth)</option>
+                    <option value="IT">IT (Isolated or impedance earthed)</option>
+                </select>
+            </div>
+            
+            <div class="row">
+                <div class="col">
+                    <div class="field-group">
+                        <label>Main Switch Rating *</label>
+                        <input type="text" name="main_switch_rating" placeholder="e.g., 63A" required>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="field-group">
+                        <label>RCD Rating *</label>
+                        <input type="text" name="rcd_rating" placeholder="e.g., 30mA" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="field-group">
+                <label>Circuit Details</label>
+                <textarea name="circuit_details" rows="3" placeholder="Describe the circuits installed (e.g., lighting circuits, power circuits, etc.)"></textarea>
+            </div>
+            
+            <!-- SECTION 10: TESTING RESULTS -->
+            <h2>10. Testing Results</h2>
+            
+            <div class="field-group">
+                <label>Insulation Test Result *</label>
+                <input type="text" name="insulation_test" placeholder="e.g., >1 MΩ" required>
+            </div>
+            
+            <div class="field-group">
+                <label>Earth Continuity Test Result *</label>
+                <input type="text" name="earth_continuity" placeholder="e.g., <0.5Ω" required>
+            </div>
+            
+            <div class="field-group">
+                <label>Polarity Test Result *</label>
+                <input type="text" name="polarity_test" placeholder="e.g., Correct" required>
+            </div>
+            
+            <div class="field-group">
+                <label>RCD Test Result *</label>
+                <input type="text" name="rcd_test" placeholder="e.g., Trip time 25ms" required>
+            </div>
+            
+            <!-- SECTION 11: DATES -->
+            <h2>11. Dates</h2>
+            
+            <div class="row">
+                <div class="col">
+                    <div class="field-group">
+                        <label>Work Completed Date *</label>
+                        <input type="date" name="date_work_completed" required>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="field-group">
+                        <label>Work Tested Date *</label>
+                        <input type="date" name="date_work_tested" required>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SECTION 12: SUBMIT CCEW -->
+            <h2>12. Submit CCEW</h2>
             
             <div class="field-group">
                 <label>Energy Provider *</label>
