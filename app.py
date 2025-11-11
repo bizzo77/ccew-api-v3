@@ -317,6 +317,60 @@ def submit_ccew():
             'work_type': request.form.get('work_type', ''),
             'work_description': request.form.get('work_description', ''),
             
+            # Work carried out checkboxes
+            'work_new_work': request.form.get('work_new_work', ''),
+            'work_installed_meter': request.form.get('work_installed_meter', ''),
+            'work_network_connection': request.form.get('work_network_connection', ''),
+            'work_addition_alteration': request.form.get('work_addition_alteration', ''),
+            'work_advanced_meter': request.form.get('work_advanced_meter', ''),
+            'work_ev_connection': request.form.get('work_ev_connection', ''),
+            'work_reinspection': request.form.get('work_reinspection', ''),
+            'non_compliance_no': request.form.get('non_compliance_no', ''),
+            
+            # Special conditions checkboxes
+            'special_over_100_amps': request.form.get('special_over_100_amps', ''),
+            'special_hazardous_area': request.form.get('special_hazardous_area', ''),
+            'special_off_grid': request.form.get('special_off_grid', ''),
+            'special_high_voltage': request.form.get('special_high_voltage', ''),
+            'special_unmetered': request.form.get('special_unmetered', ''),
+            'special_secondary_power': request.form.get('special_secondary_power', ''),
+            
+            # Equipment details
+            'equip_switchboard': request.form.get('equip_switchboard', ''),
+            'equip_switchboard_rating': request.form.get('equip_switchboard_rating', ''),
+            'equip_switchboard_number': request.form.get('equip_switchboard_number', ''),
+            'equip_switchboard_particulars': request.form.get('equip_switchboard_particulars', ''),
+            
+            'equip_circuits': request.form.get('equip_circuits', ''),
+            'equip_circuits_rating': request.form.get('equip_circuits_rating', ''),
+            'equip_circuits_number': request.form.get('equip_circuits_number', ''),
+            'equip_circuits_particulars': request.form.get('equip_circuits_particulars', ''),
+            
+            'equip_lighting': request.form.get('equip_lighting', ''),
+            'equip_lighting_rating': request.form.get('equip_lighting_rating', ''),
+            'equip_lighting_number': request.form.get('equip_lighting_number', ''),
+            'equip_lighting_particulars': request.form.get('equip_lighting_particulars', ''),
+            
+            'equip_sockets': request.form.get('equip_sockets', ''),
+            'equip_sockets_rating': request.form.get('equip_sockets_rating', ''),
+            'equip_sockets_number': request.form.get('equip_sockets_number', ''),
+            'equip_sockets_particulars': request.form.get('equip_sockets_particulars', ''),
+            
+            'equip_appliances': request.form.get('equip_appliances', ''),
+            'equip_appliances_rating': request.form.get('equip_appliances_rating', ''),
+            'equip_appliances_number': request.form.get('equip_appliances_number', ''),
+            'equip_appliances_particulars': request.form.get('equip_appliances_particulars', ''),
+            
+            'equip_generation': request.form.get('equip_generation', ''),
+            'equip_generation_rating': request.form.get('equip_generation_rating', ''),
+            'equip_generation_number': request.form.get('equip_generation_number', ''),
+            'equip_generation_particulars': request.form.get('equip_generation_particulars', ''),
+            
+            'equip_storage': request.form.get('equip_storage', ''),
+            'equip_storage_rating': request.form.get('equip_storage_rating', ''),
+            'equip_storage_number': request.form.get('equip_storage_number', ''),
+            'equip_storage_particulars': request.form.get('equip_storage_particulars', ''),
+            
             # Electrical Work Details
             'supply_type': request.form.get('supply_type', ''),
             'supply_phases': request.form.get('supply_phases', ''),
@@ -326,6 +380,17 @@ def submit_ccew():
             'main_switch_rating': request.form.get('main_switch_rating', ''),
             'rcd_rating': request.form.get('rcd_rating', ''),
             'circuit_details': request.form.get('circuit_details', ''),
+            
+            # Testing checkboxes
+            'test_earthing': request.form.get('test_earthing', ''),
+            'test_rcd': request.form.get('test_rcd', ''),
+            'test_insulation': request.form.get('test_insulation', ''),
+            'test_polarity': request.form.get('test_polarity', ''),
+            'test_visual_check': request.form.get('test_visual_check', ''),
+            'test_as4509': request.form.get('test_as4509', ''),
+            'test_current_connections': request.form.get('test_current_connections', ''),
+            'test_fault_loop': request.form.get('test_fault_loop', ''),
+            'test_date': request.form.get('test_date', ''),
             
             # Testing Results
             'insulation_test': request.form.get('insulation_test', ''),
@@ -341,7 +406,10 @@ def submit_ccew():
             
             # Dates
             'date_work_completed': request.form.get('date_work_completed', ''),
-            'date_work_tested': request.form.get('date_work_tested', '')
+            'date_work_tested': request.form.get('date_work_tested', ''),
+            
+            # Signature
+            'signature': request.form.get('signature', '')
         }
         
         # Update session with mobile data
