@@ -337,25 +337,25 @@ def generate_ccew_pdf(form_data):
     c.drawString(21*mm, y, "Special Conditions")
     y -= 5*mm
     
-    draw_checkbox(c, 60*mm, y, checked=form_data.get('special_over_100_amps') == 'yes')
+    draw_checkbox(c, 70*mm, y, checked=form_data.get('special_over_100_amps') == 'yes')
     c.setFont("Helvetica", 8)
-    c.drawString(65*mm, y + 0.5*mm, "Over 100 amps")
+    c.drawString(75*mm, y + 0.5*mm, "Over 100 amps")
     
-    draw_checkbox(c, 110*mm, y, checked=form_data.get('special_hazardous_area') == 'yes')
-    c.drawString(115*mm, y + 0.5*mm, "Hazardous Area")
+    draw_checkbox(c, 120*mm, y, checked=form_data.get('special_hazardous_area') == 'yes')
+    c.drawString(125*mm, y + 0.5*mm, "Hazardous Area")
     
-    draw_checkbox(c, 155*mm, y, checked=form_data.get('special_off_grid') == 'yes')
-    c.drawString(160*mm, y + 0.5*mm, "Off Grid Installation")
+    draw_checkbox(c, 165*mm, y, checked=form_data.get('special_off_grid') == 'yes')
+    c.drawString(170*mm, y + 0.5*mm, "Off Grid Installation")
     
-    y -= 5*mm
-    draw_checkbox(c, 60*mm, y, checked=form_data.get('special_high_voltage') == 'yes')
-    c.drawString(65*mm, y + 0.5*mm, "High Voltage")
+    y -= 6*mm
+    draw_checkbox(c, 70*mm, y, checked=form_data.get('special_high_voltage') == 'yes')
+    c.drawString(75*mm, y + 0.5*mm, "High Voltage")
     
-    draw_checkbox(c, 110*mm, y, checked=form_data.get('special_unmetered') == 'yes')
-    c.drawString(115*mm, y + 0.5*mm, "Unmetered Supply")
+    draw_checkbox(c, 120*mm, y, checked=form_data.get('special_unmetered') == 'yes')
+    c.drawString(125*mm, y + 0.5*mm, "Unmetered Supply")
     
-    draw_checkbox(c, 155*mm, y, checked=form_data.get('special_secondary_power') == 'yes')
-    c.drawString(160*mm, y + 0.5*mm, "Secondary Power Supply")
+    draw_checkbox(c, 165*mm, y, checked=form_data.get('special_secondary_power') == 'yes')
+    c.drawString(170*mm, y + 0.5*mm, "Secondary Power Supply")
     
     # ========== PAGE 2 ==========
     c.showPage()
@@ -547,7 +547,7 @@ def generate_ccew_pdf(form_data):
     c.drawString(30*mm, y + 0.5*mm, "Insulation resistance Mohms")
     y -= 5*mm
     
-    draw_checkbox(c, 25*mm, y, checked=form_data.get('test_visual_check') == 'yes')
+    draw_checkbox(c, 25*mm, y, checked=form_data.get('test_visual') == 'yes')
     c.drawString(30*mm, y + 0.5*mm, "Visual check that installation is suitable for connection to supply")
     y -= 5*mm
     
@@ -555,11 +555,11 @@ def generate_ccew_pdf(form_data):
     c.drawString(30*mm, y + 0.5*mm, "Polarity")
     y -= 5*mm
     
-    draw_checkbox(c, 25*mm, y, checked=form_data.get('test_as4509') == 'yes')
+    draw_checkbox(c, 25*mm, y, checked=form_data.get('test_standalone') == 'yes')
     c.drawString(30*mm, y + 0.5*mm, "Stand-Alone system complies with AS4509")
     y -= 5*mm
     
-    draw_checkbox(c, 25*mm, y, checked=form_data.get('test_current_connections') == 'yes')
+    draw_checkbox(c, 25*mm, y, checked=form_data.get('test_current') == 'yes')
     c.drawString(30*mm, y + 0.5*mm, "Correct current connections")
     y -= 5*mm
     
