@@ -662,7 +662,7 @@ def generate_ccew_pdf(form_data):
     draw_checkbox(c, 155*mm, y - 1*mm, checked=form_data.get('work_connected_supply') == 'No')
     
     # Draw green background for Meters
-    meters_section_end_y = y - 8*mm
+    meters_section_end_y = y - 5*mm
     meters_section_height = meters_section_start_y - meters_section_end_y
     c.setFillColor(SECTION_GREEN)
     c.setStrokeColor(black)
