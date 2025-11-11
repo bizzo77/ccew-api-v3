@@ -449,6 +449,21 @@ def generate_ccew_pdf(form_data):
     draw_checkbox(c, 170*mm, y_inst, checked=form_data.get('special_secondary_power') == 'yes')
     c.drawString(175*mm, y_inst + 0.5*mm, "Secondary Power Supply")
     
+    # Redraw page 1 header and title in BLACK on top of everything
+    c.setFillColor(HexColor('#C41E3A'))
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(20*mm, height - 25*mm, "NSW")
+    c.setFillColor(black)
+    c.drawString(35*mm, height - 25*mm, "Fair Trading")
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(150*mm, height - 25*mm, "*Serial No:")
+    draw_field(c, 170*mm, height - 28*mm, 20*mm, 5*mm, form_data.get('serial_no', ''))
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(20*mm, height - 35*mm, "Online Certificate Compliance Electrical Work (CCEW)")
+    c.setFont("Helvetica", 8)
+    c.setFillColor(black)
+    c.drawString(20*mm, height - 40*mm, "Any field marked with an * is mandatory")
+    
     # ========== PAGE 2 ==========
     c.showPage()
     y = height - 20*mm
@@ -647,7 +662,7 @@ def generate_ccew_pdf(form_data):
     draw_checkbox(c, 155*mm, y - 1*mm, checked=form_data.get('work_connected_supply') == 'No')
     
     # Draw green background for Meters
-    meters_section_end_y = y - 7*mm
+    meters_section_end_y = y - 8*mm
     meters_section_height = meters_section_start_y - meters_section_end_y
     c.setFillColor(SECTION_GREEN)
     c.setStrokeColor(black)
@@ -660,16 +675,16 @@ def generate_ccew_pdf(form_data):
     c.setFont("Helvetica-Bold", 8)
     c.drawString(22*mm, meters_section_start_y - 10*mm, "Master/Sub Status - No (N), Master (M), Sub (S)")
     c.setFont("Helvetica-Bold", 7)
-    c.drawString(22*mm, meters_section_start_y - 15*mm, "I")
-    c.drawString(27*mm, meters_section_start_y - 15*mm, "R")
-    c.drawString(32*mm, meters_section_start_y - 15*mm, "E")
-    c.drawString(40*mm, meters_section_start_y - 15*mm, "Meter No.")
-    c.drawString(65*mm, meters_section_start_y - 15*mm, "No. Dials")
-    c.drawString(85*mm, meters_section_start_y - 15*mm, "Master/Sub Status")
-    c.drawString(115*mm, meters_section_start_y - 15*mm, "Wired as Master/Sub")
-    c.drawString(145*mm, meters_section_start_y - 15*mm, "Register No.")
-    c.drawString(165*mm, meters_section_start_y - 15*mm, "Reading")
-    c.drawString(180*mm, meters_section_start_y - 15*mm, "Tariff")
+    c.drawString(22*mm, meters_section_start_y - 13*mm, "I")
+    c.drawString(27*mm, meters_section_start_y - 13*mm, "R")
+    c.drawString(32*mm, meters_section_start_y - 13*mm, "E")
+    c.drawString(40*mm, meters_section_start_y - 13*mm, "Meter No.")
+    c.drawString(65*mm, meters_section_start_y - 13*mm, "No. Dials")
+    c.drawString(85*mm, meters_section_start_y - 13*mm, "Master/Sub Status")
+    c.drawString(115*mm, meters_section_start_y - 13*mm, "Wired as Master/Sub")
+    c.drawString(145*mm, meters_section_start_y - 13*mm, "Register No.")
+    c.drawString(165*mm, meters_section_start_y - 13*mm, "Reading")
+    c.drawString(180*mm, meters_section_start_y - 13*mm, "Tariff")
     
     # Redraw all meter rows on top of green background
     y_meter = meters_section_start_y - 20*mm
