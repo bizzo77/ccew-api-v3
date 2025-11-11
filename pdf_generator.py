@@ -109,6 +109,7 @@ def generate_ccew_pdf(form_data):
     
     y -= 10*mm
     # Property Name
+    c.setFillColor(white)
     c.setFont("Helvetica-Bold", 8)
     c.drawString(22*mm, y, "Property Name")
     y -= 5*mm
@@ -116,6 +117,7 @@ def generate_ccew_pdf(form_data):
     
     y -= 8*mm
     # Floor, Unit, Street Number, Lot/RMB
+    c.setFillColor(white)
     c.drawString(22*mm, y, "Floor")
     c.drawString(48*mm, y, "Unit")
     c.drawString(77*mm, y, "*Street Number")
@@ -129,6 +131,7 @@ def generate_ccew_pdf(form_data):
     
     y -= 8*mm
     # Street Name, Nearest Cross Street
+    c.setFillColor(white)
     c.drawString(22*mm, y, "*Street Name")
     c.drawString(115*mm, y, "Nearest Cross Street")
     y -= 5*mm
@@ -137,6 +140,7 @@ def generate_ccew_pdf(form_data):
     
     y -= 8*mm
     # Suburb, State, Post Code
+    c.setFillColor(white)
     c.drawString(22*mm, y, "*Suburb")
     c.drawString(115*mm, y, "*State")
     c.drawString(155*mm, y, "*Post Code")
@@ -147,6 +151,7 @@ def generate_ccew_pdf(form_data):
     
     y -= 8*mm
     # Pit/Pillar, NMI, Meter No, AEMO
+    c.setFillColor(white)
     c.drawString(22*mm, y, "Pit/Pillar/Pole No.")
     c.drawString(65*mm, y, "NMI")
     c.drawString(100*mm, y, "Meter No.")
@@ -169,6 +174,7 @@ def generate_ccew_pdf(form_data):
     c.drawString(22*mm, y - 5*mm, "CUSTOMER DETAILS")
     
     y -= 10*mm
+    c.setFillColor(white)
     c.setFont("Helvetica-Bold", 8)
     c.drawString(22*mm, y, "*First Name")
     c.drawString(115*mm, y, "*Last Name")
@@ -230,6 +236,7 @@ def generate_ccew_pdf(form_data):
     c.drawString(22*mm, y - 5*mm, "INSTALLATION DETAILS")
     
     y -= 10*mm
+    c.setFillColor(white)
     c.setFont("Helvetica-Bold", 8)
     c.drawString(22*mm, y, "*Type of Installation")
     y -= 5*mm
@@ -486,6 +493,7 @@ def generate_ccew_pdf(form_data):
     c.drawString(22*mm, y - 5*mm, "INSTALLERS LICENSE DETAILS")
     
     y -= 10*mm
+    c.setFillColor(white)
     c.setFont("Helvetica-Bold", 8)
     c.drawString(22*mm, y, "*First Name")
     c.drawString(115*mm, y, "*Last Name")
@@ -608,6 +616,7 @@ def generate_ccew_pdf(form_data):
     c.drawString(22*mm, y - 5*mm, "TESTERS LICENSE DETAILS")
     
     y -= 10*mm
+    c.setFillColor(white)
     c.setFont("Helvetica-Bold", 8)
     c.drawString(22*mm, y, "*First Name")
     c.drawString(115*mm, y, "*Last Name")
@@ -684,6 +693,7 @@ def generate_ccew_pdf(form_data):
     c.drawString(22*mm, y - 5*mm, "*SUBMIT CCEW")
     
     y -= 10*mm
+    c.setFillColor(white)
     c.setFont("Helvetica", 8)
     c.drawString(22*mm, y, "Please select the energy provider for where this work has been carried out, to email a copy of this")
     y -= 4*mm
