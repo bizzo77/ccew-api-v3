@@ -95,7 +95,7 @@ def generate_ccew_pdf(form_data):
     # ========== INSTALLATION ADDRESS SECTION ==========
     y -= 8*mm
     section_start_y = y
-    section_height = 48*mm
+    section_height = 75*mm
     
     # Draw green background for entire section
     c.setFillColor(SECTION_GREEN)
@@ -159,7 +159,7 @@ def generate_ccew_pdf(form_data):
     
     # ========== CUSTOMER DETAILS SECTION ==========
     y -= 12*mm
-    section_height = 48*mm
+    section_height = 80*mm
     
     c.setFillColor(SECTION_GREEN)
     c.rect(20*mm, y - section_height, 170*mm, section_height, stroke=1, fill=1)
@@ -220,7 +220,7 @@ def generate_ccew_pdf(form_data):
     
     # ========== INSTALLATION DETAILS SECTION ==========
     y -= 12*mm
-    section_height = 48*mm
+    section_height = 60*mm
     
     c.setFillColor(SECTION_GREEN)
     c.rect(20*mm, y - section_height, 170*mm, section_height, stroke=1, fill=1)
@@ -476,7 +476,7 @@ def generate_ccew_pdf(form_data):
     
     # ========== INSTALLERS LICENSE DETAILS SECTION ==========
     y -= 10*mm
-    section_height = 48*mm
+    section_height = 80*mm
     
     c.setFillColor(SECTION_GREEN)
     c.rect(20*mm, y - section_height, 170*mm, section_height, stroke=1, fill=1)
@@ -598,7 +598,7 @@ def generate_ccew_pdf(form_data):
     
     # ========== TESTERS LICENSE DETAILS SECTION ==========
     y -= 12*mm
-    section_height = 48*mm
+    section_height = 80*mm
     
     c.setFillColor(SECTION_GREEN)
     c.rect(20*mm, y - section_height, 170*mm, section_height, stroke=1, fill=1)
@@ -673,7 +673,7 @@ def generate_ccew_pdf(form_data):
     
     # ========== SUBMIT CCEW SECTION ==========
     y -= 10*mm
-    section_height = 35*mm
+    section_height = 45*mm
     
     c.setFillColor(SECTION_GREEN)
     c.setStrokeColor(black)
