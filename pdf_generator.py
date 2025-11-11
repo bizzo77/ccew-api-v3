@@ -95,7 +95,7 @@ def generate_ccew_pdf(form_data):
     # ========== INSTALLATION ADDRESS SECTION ==========
     y -= 8*mm
     section_start_y = y
-    section_height = 48*mm
+    section_height = 70*mm
     
     # Draw green background for entire section
     c.setFillColor(SECTION_GREEN)
@@ -164,7 +164,7 @@ def generate_ccew_pdf(form_data):
     
     # ========== CUSTOMER DETAILS SECTION ==========
     y -= 12*mm
-    section_height = 48*mm
+    section_height = 75*mm
     
     c.setFillColor(SECTION_GREEN)
     c.rect(20*mm, y - section_height, 170*mm, section_height, stroke=1, fill=1)
@@ -183,11 +183,13 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 109*mm, y, 80*mm, 5*mm, form_data.get('customer_last_name', ''))
     
     y -= 8*mm
+    c.setFillColor(white)
     c.drawString(22*mm, y, "Company Name")
     y -= 5*mm
     draw_field(c, 21*mm, y, 168*mm, 5*mm, form_data.get('customer_company_name', ''))
     
     y -= 8*mm
+    c.setFillColor(white)
     c.drawString(22*mm, y, "Floor")
     c.drawString(48*mm, y, "Unit")
     c.drawString(77*mm, y, "*Street Number")
@@ -200,6 +202,7 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 128*mm, y, 61*mm, 5*mm, '')
     
     y -= 8*mm
+    c.setFillColor(white)
     c.drawString(22*mm, y, "*Street Name")
     c.drawString(115*mm, y, "Nearest Cross Street")
     y -= 5*mm
@@ -207,6 +210,7 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 109*mm, y, 80*mm, 5*mm, '')
     
     y -= 8*mm
+    c.setFillColor(white)
     c.drawString(22*mm, y, "*Suburb")
     c.drawString(115*mm, y, "*State")
     c.drawString(155*mm, y, "*Post Code")
@@ -216,6 +220,7 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 154*mm, y, 35*mm, 5*mm, form_data.get('customer_postcode', ''))
     
     y -= 8*mm
+    c.setFillColor(white)
     c.drawString(22*mm, y, "Email")
     c.drawString(115*mm, y, "Office No.")
     c.drawString(155*mm, y, "Mobile No.")
@@ -483,7 +488,7 @@ def generate_ccew_pdf(form_data):
     
     # ========== INSTALLERS LICENSE DETAILS SECTION ==========
     y -= 10*mm
-    section_height = 48*mm
+    section_height = 75*mm
     
     c.setFillColor(SECTION_GREEN)
     c.rect(20*mm, y - section_height, 170*mm, section_height, stroke=1, fill=1)
@@ -502,6 +507,7 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 109*mm, y, 80*mm, 5*mm, form_data.get('installer_last_name', ''))
     
     y -= 8*mm
+    c.setFillColor(white)
     c.drawString(22*mm, y, "Floor")
     c.drawString(48*mm, y, "Unit")
     c.drawString(77*mm, y, "*Street Number")
@@ -514,6 +520,7 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 128*mm, y, 61*mm, 5*mm, '')
     
     y -= 8*mm
+    c.setFillColor(white)
     c.drawString(22*mm, y, "*Street Name")
     c.drawString(115*mm, y, "Nearest Cross Street")
     y -= 5*mm
@@ -521,6 +528,7 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 109*mm, y, 80*mm, 5*mm, '')
     
     y -= 8*mm
+    c.setFillColor(white)
     c.drawString(22*mm, y, "*Suburb")
     c.drawString(115*mm, y, "*State")
     c.drawString(155*mm, y, "*Post Code")
@@ -530,6 +538,7 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 154*mm, y, 35*mm, 5*mm, form_data.get('installer_postcode', ''))
     
     y -= 8*mm
+    c.setFillColor(white)
     c.drawString(22*mm, y, "*Email")
     c.drawString(115*mm, y, "*Office Phone")
     c.drawString(155*mm, y, "Mobile Phone")
@@ -539,6 +548,7 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 154*mm, y, 35*mm, 5*mm, form_data.get('installer_mobile_phone', ''))
     
     y -= 8*mm
+    c.setFillColor(white)
     c.drawString(22*mm, y, "*Qualified Supervisors No.")
     c.drawString(65*mm, y, "*Expiry Date")
     c.drawString(95*mm, y, "Or")
@@ -606,7 +616,7 @@ def generate_ccew_pdf(form_data):
     
     # ========== TESTERS LICENSE DETAILS SECTION ==========
     y -= 12*mm
-    section_height = 48*mm
+    section_height = 75*mm
     
     c.setFillColor(SECTION_GREEN)
     c.rect(20*mm, y - section_height, 170*mm, section_height, stroke=1, fill=1)
@@ -625,6 +635,7 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 109*mm, y, 80*mm, 5*mm, form_data.get('tester_last_name', ''))
     
     y -= 8*mm
+    c.setFillColor(white)
     c.drawString(22*mm, y, "Floor")
     c.drawString(48*mm, y, "Unit")
     c.drawString(77*mm, y, "*Street Number")
@@ -637,6 +648,7 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 128*mm, y, 61*mm, 5*mm, '')
     
     y -= 8*mm
+    c.setFillColor(white)
     c.drawString(22*mm, y, "*Street Name")
     c.drawString(115*mm, y, "Nearest Cross Street")
     y -= 5*mm
@@ -644,6 +656,7 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 109*mm, y, 80*mm, 5*mm, '')
     
     y -= 8*mm
+    c.setFillColor(white)
     c.drawString(22*mm, y, "*Suburb")
     c.drawString(115*mm, y, "*State")
     c.drawString(155*mm, y, "*Post Code")
@@ -653,6 +666,7 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 154*mm, y, 35*mm, 5*mm, form_data.get('tester_postcode', ''))
     
     y -= 8*mm
+    c.setFillColor(white)
     c.drawString(22*mm, y, "*Email")
     c.drawString(115*mm, y, "Office Phone")
     c.drawString(155*mm, y, "Mobile Phone")
@@ -662,6 +676,7 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 154*mm, y, 35*mm, 5*mm, form_data.get('tester_mobile_phone', ''))
     
     y -= 8*mm
+    c.setFillColor(white)
     c.drawString(22*mm, y, "*Qualified Supervisors No.")
     c.drawString(65*mm, y, "*Expiry Date")
     c.drawString(95*mm, y, "Or")
