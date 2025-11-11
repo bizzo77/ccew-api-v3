@@ -95,17 +95,10 @@ def generate_ccew_pdf(form_data):
     # ========== INSTALLATION ADDRESS SECTION ==========
     y -= 8*mm
     section_start_y = y
-    section_height = 75*mm
     
-    # Draw green background for entire section
-    c.setFillColor(SECTION_GREEN)
-    c.setStrokeColor(black)
-    c.rect(20*mm, y - section_height, 170*mm, section_height, stroke=1, fill=1)
-    
-    # Section header
-    c.setFillColor(white)
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(22*mm, y - 5*mm, "INSTALLATION ADDRESS")
+    # Section header (will be drawn later)
+    header_text = "INSTALLATION ADDRESS"
+    header_y = y - 5*mm
     
     y -= 10*mm
     # Property Name
@@ -157,16 +150,40 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 99*mm, y, 32*mm, 5*mm, form_data.get('meter_no', ''))
     draw_field(c, 134*mm, y, 55*mm, 5*mm, form_data.get('aemo_provider_id', ''))
     
-    # ========== CUSTOMER DETAILS SECTION ==========
-    y -= 12*mm
-    section_height = 80*mm
-    
+    # Now draw green background covering entire section
+    section_end_y = y - 5*mm  # Add padding at bottom
+    section_height = section_start_y - section_end_y
     c.setFillColor(SECTION_GREEN)
-    c.rect(20*mm, y - section_height, 170*mm, section_height, stroke=1, fill=1)
+    c.setStrokeColor(black)
+    c.rect(20*mm, section_end_y, 170*mm, section_height, stroke=1, fill=1)
     
+    # Draw section header and all labels in WHITE on top of green background
     c.setFillColor(white)
     c.setFont("Helvetica-Bold", 11)
-    c.drawString(22*mm, y - 5*mm, "CUSTOMER DETAILS")
+    c.drawString(22*mm, header_y, header_text)
+    
+    # Redraw all field labels in white
+    c.setFont("Helvetica-Bold", 8)
+    c.drawString(22*mm, section_start_y - 10*mm, "Property Name")
+    c.drawString(22*mm, section_start_y - 18*mm, "Floor")
+    c.drawString(48*mm, section_start_y - 18*mm, "Unit")
+    c.drawString(77*mm, section_start_y - 18*mm, "*Street Number")
+    c.drawString(115*mm, section_start_y - 18*mm, "&/or")
+    c.drawString(130*mm, section_start_y - 18*mm, "Lot/RMB")
+    c.drawString(22*mm, section_start_y - 26*mm, "*Street Name")
+    c.drawString(115*mm, section_start_y - 26*mm, "Nearest Cross Street")
+    c.drawString(22*mm, section_start_y - 34*mm, "*Suburb")
+    c.drawString(115*mm, section_start_y - 34*mm, "*State")
+    c.drawString(155*mm, section_start_y - 34*mm, "*Post Code")
+    c.drawString(22*mm, section_start_y - 42*mm, "Pit/Pillar/Pole No.")
+    c.drawString(65*mm, section_start_y - 42*mm, "NMI")
+    c.drawString(100*mm, section_start_y - 42*mm, "Meter No.")
+    c.drawString(135*mm, section_start_y - 42*mm, "AEMO Metering Provider I.D.")
+    
+    # ========== CUSTOMER DETAILS SECTION ==========
+    y -= 12*mm
+    cust_section_start_y = y
+    cust_header_y = y - 5*mm
     
     y -= 10*mm
     c.setFont("Helvetica-Bold", 8)
@@ -218,16 +235,38 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 109*mm, y, 42*mm, 5*mm, form_data.get('customer_office_phone', ''))
     draw_field(c, 154*mm, y, 35*mm, 5*mm, form_data.get('customer_mobile_phone', ''))
     
-    # ========== INSTALLATION DETAILS SECTION ==========
-    y -= 12*mm
-    section_height = 60*mm
-    
+    # Draw green background for Customer Details
+    cust_section_end_y = y - 5*mm
+    cust_section_height = cust_section_start_y - cust_section_end_y
     c.setFillColor(SECTION_GREEN)
-    c.rect(20*mm, y - section_height, 170*mm, section_height, stroke=1, fill=1)
+    c.rect(20*mm, cust_section_end_y, 170*mm, cust_section_height, stroke=1, fill=1)
     
+    # Draw header and labels in white
     c.setFillColor(white)
     c.setFont("Helvetica-Bold", 11)
-    c.drawString(22*mm, y - 5*mm, "INSTALLATION DETAILS")
+    c.drawString(22*mm, cust_header_y, "CUSTOMER DETAILS")
+    c.setFont("Helvetica-Bold", 8)
+    c.drawString(22*mm, cust_section_start_y - 10*mm, "*First Name")
+    c.drawString(115*mm, cust_section_start_y - 10*mm, "*Last Name")
+    c.drawString(22*mm, cust_section_start_y - 18*mm, "Company Name")
+    c.drawString(22*mm, cust_section_start_y - 26*mm, "Floor")
+    c.drawString(48*mm, cust_section_start_y - 26*mm, "Unit")
+    c.drawString(77*mm, cust_section_start_y - 26*mm, "*Street Number")
+    c.drawString(115*mm, cust_section_start_y - 26*mm, "&/or")
+    c.drawString(130*mm, cust_section_start_y - 26*mm, "Lot/RMB")
+    c.drawString(22*mm, cust_section_start_y - 34*mm, "*Street Name")
+    c.drawString(115*mm, cust_section_start_y - 34*mm, "Nearest Cross Street")
+    c.drawString(22*mm, cust_section_start_y - 42*mm, "*Suburb")
+    c.drawString(115*mm, cust_section_start_y - 42*mm, "*State")
+    c.drawString(155*mm, cust_section_start_y - 42*mm, "*Post Code")
+    c.drawString(22*mm, cust_section_start_y - 50*mm, "Email")
+    c.drawString(115*mm, cust_section_start_y - 50*mm, "Office No.")
+    c.drawString(155*mm, cust_section_start_y - 50*mm, "Mobile No.")
+    
+    # ========== INSTALLATION DETAILS SECTION ==========
+    y -= 12*mm
+    inst_section_start_y = y
+    inst_header_y = y - 5*mm
     
     y -= 10*mm
     c.setFont("Helvetica-Bold", 8)
@@ -295,20 +334,28 @@ def generate_ccew_pdf(form_data):
     draw_checkbox(c, 170*mm, y, checked=form_data.get('special_secondary_power') == 'yes')
     c.drawString(175*mm, y + 0.5*mm, "Secondary Power Supply")
     
+    # Draw green background for Installation Details
+    inst_section_end_y = y - 5*mm
+    inst_section_height = inst_section_start_y - inst_section_end_y
+    c.setFillColor(SECTION_GREEN)
+    c.rect(20*mm, inst_section_end_y, 170*mm, inst_section_height, stroke=1, fill=1)
+    
+    # Draw header and labels in white
+    c.setFillColor(white)
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(22*mm, inst_header_y, "INSTALLATION DETAILS")
+    c.setFont("Helvetica-Bold", 8)
+    c.drawString(22*mm, inst_section_start_y - 10*mm, "*Type of Installation")
+    c.drawString(22*mm, inst_section_start_y - 22*mm, "*Work carried out")
+    c.drawString(22*mm, inst_section_start_y - 39*mm, "Special Conditions")
+    
     # ========== PAGE 2 ==========
     c.showPage()
     y = height - 20*mm
     
     # ========== EQUIPMENT SECTION ==========
-    section_height = 70*mm
-    
-    c.setFillColor(SECTION_GREEN)
-    c.setStrokeColor(black)
-    c.rect(20*mm, y - section_height, 170*mm, section_height, stroke=1, fill=1)
-    
-    c.setFillColor(white)
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(22*mm, y - 5*mm, "*DETAILS OF EQUIPMENT")
+    equip_section_start_y = y
+    equip_header_y = y - 5*mm
     
     y -= 10*mm
     c.setFont("Helvetica", 8)
@@ -343,16 +390,29 @@ def generate_ccew_pdf(form_data):
         draw_field(c, 145*mm, y, 44*mm, 5*mm, form_data.get(particulars_field, ''))
         y -= 6*mm
     
-    # ========== METERS SECTION ==========
-    y -= 5*mm
-    section_height = 70*mm
-    
+    # Draw green background for Equipment
+    equip_section_end_y = y
+    equip_section_height = equip_section_start_y - equip_section_end_y
     c.setFillColor(SECTION_GREEN)
-    c.rect(20*mm, y - section_height, 170*mm, section_height, stroke=1, fill=1)
+    c.setStrokeColor(black)
+    c.rect(20*mm, equip_section_end_y, 170*mm, equip_section_height, stroke=1, fill=1)
     
+    # Draw header and labels in white
     c.setFillColor(white)
     c.setFont("Helvetica-Bold", 11)
-    c.drawString(22*mm, y - 5*mm, "*Meters - Installed (I), Removed (R), Existing (E)")
+    c.drawString(22*mm, equip_header_y, "*DETAILS OF EQUIPMENT")
+    c.setFont("Helvetica", 8)
+    c.drawString(22*mm, equip_section_start_y - 10*mm, "Select equipment installed and estimate increase of work affected by the work carried out")
+    c.setFont("Helvetica-Bold", 8)
+    c.drawString(22*mm, equip_section_start_y - 17*mm, "EQUIPMENT")
+    c.drawString(75*mm, equip_section_start_y - 17*mm, "RATING")
+    c.drawString(110*mm, equip_section_start_y - 17*mm, "NUMBER INSTALLED")
+    c.drawString(150*mm, equip_section_start_y - 17*mm, "PARTICULARS")
+    
+    # ========== METERS SECTION ==========
+    y -= 5*mm
+    meters_section_start_y = y
+    meters_header_y = y - 5*mm
     
     y -= 10*mm
     c.setFont("Helvetica-Bold", 8)
@@ -474,16 +534,48 @@ def generate_ccew_pdf(form_data):
     c.drawString(145*mm, y, "No")
     draw_checkbox(c, 155*mm, y - 1*mm, checked=form_data.get('work_connected_supply') == 'No')
     
-    # ========== INSTALLERS LICENSE DETAILS SECTION ==========
-    y -= 10*mm
-    section_height = 80*mm
-    
+    # Draw green background for Meters
+    meters_section_end_y = y - 6*mm
+    meters_section_height = meters_section_start_y - meters_section_end_y
     c.setFillColor(SECTION_GREEN)
-    c.rect(20*mm, y - section_height, 170*mm, section_height, stroke=1, fill=1)
+    c.setStrokeColor(black)
+    c.rect(20*mm, meters_section_end_y, 170*mm, meters_section_height, stroke=1, fill=1)
     
+    # Draw header and labels in white
     c.setFillColor(white)
     c.setFont("Helvetica-Bold", 11)
-    c.drawString(22*mm, y - 5*mm, "INSTALLERS LICENSE DETAILS")
+    c.drawString(22*mm, meters_header_y, "*Meters - Installed (I), Removed (R), Existing (E)")
+    c.setFont("Helvetica-Bold", 8)
+    c.drawString(22*mm, meters_section_start_y - 10*mm, "Master/Sub Status - No (N), Master (M), Sub (S)")
+    c.setFont("Helvetica-Bold", 7)
+    c.drawString(22*mm, meters_section_start_y - 15*mm, "I")
+    c.drawString(27*mm, meters_section_start_y - 15*mm, "R")
+    c.drawString(32*mm, meters_section_start_y - 15*mm, "E")
+    c.drawString(40*mm, meters_section_start_y - 15*mm, "Meter No.")
+    c.drawString(65*mm, meters_section_start_y - 15*mm, "No. Dials")
+    c.drawString(85*mm, meters_section_start_y - 15*mm, "Master/Sub Status")
+    c.drawString(115*mm, meters_section_start_y - 15*mm, "Wired as Master/Sub")
+    c.drawString(145*mm, meters_section_start_y - 15*mm, "Register No.")
+    c.drawString(165*mm, meters_section_start_y - 15*mm, "Reading")
+    c.drawString(180*mm, meters_section_start_y - 15*mm, "Tariff")
+    
+    # Redraw bottom labels in white
+    y_bottom = meters_section_end_y + 12*mm
+    c.setFont("Helvetica-Bold", 8)
+    c.drawString(22*mm, y_bottom, "Estimated increase in load A/ph")
+    y_bottom -= 7*mm
+    c.drawString(22*mm, y_bottom, "* Is increased load within capacity of installation/service mains?")
+    c.drawString(125*mm, y_bottom, "Yes")
+    c.drawString(145*mm, y_bottom, "No")
+    y_bottom -= 6*mm
+    c.drawString(22*mm, y_bottom, "* Is work connected to supply? (pending DSNP Inspection)")
+    c.drawString(125*mm, y_bottom, "Yes")
+    c.drawString(145*mm, y_bottom, "No")
+    
+    # ========== INSTALLERS LICENSE DETAILS SECTION ==========
+    y -= 10*mm
+    installers_section_start_y = y
+    installers_header_y = y - 5*mm
     
     y -= 10*mm
     c.setFont("Helvetica-Bold", 8)
@@ -542,19 +634,58 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 104*mm, y, 47*mm, 5*mm, form_data.get('installer_license_no', ''))
     draw_field(c, 154*mm, y, 35*mm, 5*mm, format_date_australian(form_data.get('installer_license_expiry', '')))
     
+    # Draw green background for Installers License
+    installers_section_end_y = y - 5*mm
+    installers_section_height = installers_section_start_y - installers_section_end_y
+    c.setFillColor(SECTION_GREEN)
+    c.setStrokeColor(black)
+    c.rect(20*mm, installers_section_end_y, 170*mm, installers_section_height, stroke=1, fill=1)
+    
+    # Draw header and all labels in white
+    c.setFillColor(white)
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(22*mm, installers_header_y, "INSTALLERS LICENSE DETAILS")
+    
+    c.setFont("Helvetica-Bold", 8)
+    y_label = installers_section_start_y - 10*mm
+    c.drawString(22*mm, y_label, "*First Name")
+    c.drawString(115*mm, y_label, "*Last Name")
+    
+    y_label -= 13*mm
+    c.drawString(22*mm, y_label, "Floor")
+    c.drawString(48*mm, y_label, "Unit")
+    c.drawString(77*mm, y_label, "*Street Number")
+    c.drawString(115*mm, y_label, "&/or")
+    c.drawString(130*mm, y_label, "Lot/RMB")
+    
+    y_label -= 13*mm
+    c.drawString(22*mm, y_label, "*Street Name")
+    c.drawString(115*mm, y_label, "Nearest Cross Street")
+    
+    y_label -= 13*mm
+    c.drawString(22*mm, y_label, "*Suburb")
+    c.drawString(115*mm, y_label, "*State")
+    c.drawString(155*mm, y_label, "*Post Code")
+    
+    y_label -= 13*mm
+    c.drawString(22*mm, y_label, "*Email")
+    c.drawString(115*mm, y_label, "*Office Phone")
+    c.drawString(155*mm, y_label, "Mobile Phone")
+    
+    y_label -= 13*mm
+    c.drawString(22*mm, y_label, "*Qualified Supervisors No.")
+    c.drawString(65*mm, y_label, "*Expiry Date")
+    c.drawString(95*mm, y_label, "Or")
+    c.drawString(105*mm, y_label, "*Contractor's License No.")
+    c.drawString(155*mm, y_label, "*Expiry Date")
+    
     # ========== PAGE 3 ==========
     c.showPage()
     y = height - 20*mm
     
     # ========== TEST REPORT SECTION ==========
-    section_height = 70*mm
-    
-    c.setFillColor(SECTION_GREEN)
-    c.rect(20*mm, y - section_height, 170*mm, section_height, stroke=1, fill=1)
-    
-    c.setFillColor(white)
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(22*mm, y - 5*mm, "*TEST REPORT")
+    test_section_start_y = y
+    test_header_y = y - 5*mm
     
     y -= 10*mm
     c.setFont("Helvetica", 8)
@@ -596,16 +727,50 @@ def generate_ccew_pdf(form_data):
     c.drawString(22*mm, y, "3.  *The test was completed on")
     draw_field(c, 70*mm, y - 2*mm, 40*mm, 5*mm, format_date_australian(form_data.get('test_date', '')))
     
-    # ========== TESTERS LICENSE DETAILS SECTION ==========
-    y -= 12*mm
-    section_height = 80*mm
-    
+    # Draw green background for Test Report
+    test_section_end_y = y - 7*mm
+    test_section_height = test_section_start_y - test_section_end_y
     c.setFillColor(SECTION_GREEN)
-    c.rect(20*mm, y - section_height, 170*mm, section_height, stroke=1, fill=1)
+    c.setStrokeColor(black)
+    c.rect(20*mm, test_section_end_y, 170*mm, test_section_height, stroke=1, fill=1)
     
+    # Draw header and all text in white
     c.setFillColor(white)
     c.setFont("Helvetica-Bold", 11)
-    c.drawString(22*mm, y - 5*mm, "TESTERS LICENSE DETAILS")
+    c.drawString(22*mm, test_header_y, "*TEST REPORT")
+    
+    c.setFont("Helvetica", 8)
+    y_text = test_section_start_y - 10*mm
+    c.drawString(22*mm, y_text, "In respect to the test carried out by me on the above mentioned installation, I certify that:")
+    y_text -= 5*mm
+    c.drawString(22*mm, y_text, "1.  I have carried out the test below and that the installation has passed the following requirements:")
+    y_text -= 5*mm
+    c.drawString(30*mm, y_text + 0.5*mm, "Earthing system integrity")
+    y_text -= 5*mm
+    c.drawString(30*mm, y_text + 0.5*mm, "Residual current device operational")
+    y_text -= 5*mm
+    c.drawString(30*mm, y_text + 0.5*mm, "Insulation resistance Mohms")
+    y_text -= 5*mm
+    c.drawString(30*mm, y_text + 0.5*mm, "Visual check that installation is suitable for connection to supply")
+    y_text -= 5*mm
+    c.drawString(30*mm, y_text + 0.5*mm, "Polarity")
+    y_text -= 5*mm
+    c.drawString(30*mm, y_text + 0.5*mm, "Stand-Alone system complies with AS4509")
+    y_text -= 5*mm
+    c.drawString(30*mm, y_text + 0.5*mm, "Correct current connections")
+    y_text -= 5*mm
+    c.drawString(30*mm, y_text + 0.5*mm, "Fault loop impedance (if necessary)")
+    y_text -= 7*mm
+    c.drawString(22*mm, y_text, "2.  I confirm that I have visually checked that the installation described in this Certificate complies with the")
+    y_text -= 4*mm
+    c.drawString(26*mm, y_text, "relevant Acts, Regulations, Codes and Standards:")
+    y_text -= 7*mm
+    c.drawString(22*mm, y_text, "3.  *The test was completed on")
+    
+    # ========== TESTERS LICENSE DETAILS SECTION ==========
+    y -= 12*mm
+    testers_section_start_y = y
+    testers_header_y = y - 5*mm
     
     y -= 10*mm
     c.setFont("Helvetica-Bold", 8)
@@ -665,23 +830,66 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 154*mm, y, 35*mm, 5*mm, format_date_australian(form_data.get('tester_license_expiry', '')))
     
     y -= 10*mm
-    c.setFillColor(black)
     c.setFont("Helvetica", 8)
     c.drawString(21*mm, y, "In my capacity as the Tester, I certify that the electrical work carried out on the above mentioned property")
     y -= 4*mm
     c.drawString(21*mm, y, "was completed by the nominated electrician")
     
-    # ========== SUBMIT CCEW SECTION ==========
-    y -= 10*mm
-    section_height = 45*mm
-    
+    # Draw green background for Testers License
+    testers_section_end_y = y - 4*mm
+    testers_section_height = testers_section_start_y - testers_section_end_y
     c.setFillColor(SECTION_GREEN)
     c.setStrokeColor(black)
-    c.rect(20*mm, y - section_height, 170*mm, section_height, stroke=1, fill=1)
+    c.rect(20*mm, testers_section_end_y, 170*mm, testers_section_height, stroke=1, fill=1)
     
+    # Draw header and all labels in white
     c.setFillColor(white)
     c.setFont("Helvetica-Bold", 11)
-    c.drawString(22*mm, y - 5*mm, "*SUBMIT CCEW")
+    c.drawString(22*mm, testers_header_y, "TESTERS LICENSE DETAILS")
+    
+    c.setFont("Helvetica-Bold", 8)
+    y_label = testers_section_start_y - 10*mm
+    c.drawString(22*mm, y_label, "*First Name")
+    c.drawString(115*mm, y_label, "*Last Name")
+    
+    y_label -= 13*mm
+    c.drawString(22*mm, y_label, "Floor")
+    c.drawString(48*mm, y_label, "Unit")
+    c.drawString(77*mm, y_label, "*Street Number")
+    c.drawString(115*mm, y_label, "&/or")
+    c.drawString(130*mm, y_label, "Lot/RMB")
+    
+    y_label -= 13*mm
+    c.drawString(22*mm, y_label, "*Street Name")
+    c.drawString(115*mm, y_label, "Nearest Cross Street")
+    
+    y_label -= 13*mm
+    c.drawString(22*mm, y_label, "*Suburb")
+    c.drawString(115*mm, y_label, "*State")
+    c.drawString(155*mm, y_label, "*Post Code")
+    
+    y_label -= 13*mm
+    c.drawString(22*mm, y_label, "*Email")
+    c.drawString(115*mm, y_label, "Office Phone")
+    c.drawString(155*mm, y_label, "Mobile Phone")
+    
+    y_label -= 13*mm
+    c.drawString(22*mm, y_label, "*Qualified Supervisors No.")
+    c.drawString(65*mm, y_label, "*Expiry Date")
+    c.drawString(95*mm, y_label, "Or")
+    c.drawString(105*mm, y_label, "*Contractor's License No.")
+    c.drawString(155*mm, y_label, "*Expiry Date")
+    
+    y_label -= 13*mm
+    c.setFont("Helvetica", 8)
+    c.drawString(21*mm, y_label, "In my capacity as the Tester, I certify that the electrical work carried out on the above mentioned property")
+    y_label -= 4*mm
+    c.drawString(21*mm, y_label, "was completed by the nominated electrician")
+    
+    # ========== SUBMIT CCEW SECTION ==========
+    y -= 10*mm
+    submit_section_start_y = y
+    submit_header_y = y - 5*mm
     
     y -= 10*mm
     c.setFont("Helvetica", 8)
@@ -697,9 +905,32 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 21*mm, y, 168*mm, 5*mm, '')
     
     y -= 10*mm
-    c.setFillColor(black)
     c.drawString(21*mm, y, "Signature:")
     draw_field(c, 21*mm, y - 8*mm, 80*mm, 20*mm, form_data.get('signature', ''))
+    
+    # Draw green background for Submit CCEW
+    submit_section_end_y = y - 28*mm
+    submit_section_height = submit_section_start_y - submit_section_end_y
+    c.setFillColor(SECTION_GREEN)
+    c.setStrokeColor(black)
+    c.rect(20*mm, submit_section_end_y, 170*mm, submit_section_height, stroke=1, fill=1)
+    
+    # Draw header and labels in white
+    c.setFillColor(white)
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(22*mm, submit_header_y, "*SUBMIT CCEW")
+    
+    c.setFont("Helvetica", 8)
+    y_text = submit_section_start_y - 10*mm
+    c.drawString(22*mm, y_text, "Please select the energy provider for where this work has been carried out, to email a copy of this")
+    y_text -= 4*mm
+    c.drawString(22*mm, y_text, "CCEW directly to that provider")
+    
+    y_text -= 12*mm
+    c.drawString(22*mm, y_text, "Please enter the meter providers email to send a copy of this CCEW directly to that provider")
+    
+    y_text -= 16*mm
+    c.drawString(21*mm, y_text, "Signature:")
     
     # Finalize
     c.save()
