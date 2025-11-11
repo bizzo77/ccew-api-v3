@@ -386,9 +386,9 @@ def submit_ccew():
             'test_rcd': request.form.get('test_rcd', ''),
             'test_insulation': request.form.get('test_insulation', ''),
             'test_polarity': request.form.get('test_polarity', ''),
-            'test_visual_check': request.form.get('test_visual_check', ''),
-            'test_as4509': request.form.get('test_as4509', ''),
-            'test_current_connections': request.form.get('test_current_connections', ''),
+            'test_visual': request.form.get('test_visual', ''),
+            'test_standalone': request.form.get('test_standalone', ''),
+            'test_current': request.form.get('test_current', ''),
             'test_fault_loop': request.form.get('test_fault_loop', ''),
             'test_date': request.form.get('test_date', ''),
             
