@@ -644,10 +644,12 @@ def generate_ccew_pdf(form_data):
     
     y -= 3*mm
     c.setFont("Helvetica-Bold", 8)
+    y_load_increase = y
     c.drawString(22*mm, y, "Estimated increase in load A/ph")
     draw_field(c, 75*mm, y - 2*mm, 30*mm, 5*mm, form_data.get('load_increase', ''))
     
     y -= 7*mm
+    y_first_question = y
     c.drawString(22*mm, y, "* Is increased load within capacity of installation/service mains?")
     c.drawString(125*mm, y, "Yes")
     draw_checkbox(c, 135*mm, y - 1*mm, checked=form_data.get('load_within_capacity') == 'Yes')
@@ -655,6 +657,7 @@ def generate_ccew_pdf(form_data):
     draw_checkbox(c, 155*mm, y - 1*mm, checked=form_data.get('load_within_capacity') == 'No')
     
     y -= 6*mm
+    y_second_question = y
     c.drawString(22*mm, y, "* Is work connected to supply? (pending DSNP Inspection)")
     c.drawString(125*mm, y, "Yes")
     draw_checkbox(c, 135*mm, y - 1*mm, checked=form_data.get('work_connected_supply') == 'Yes')
@@ -716,26 +719,23 @@ def generate_ccew_pdf(form_data):
             draw_field(c, 178*mm, y_meter, 11*mm, 4*mm, '')
         y_meter -= 5*mm
     
-    # Redraw bottom section with fields and checkboxes
-    y_bottom = meters_section_end_y + 12*mm
+    # Redraw bottom section with fields and checkboxes using saved positions
     c.setFillColor(white)
     c.setFont("Helvetica-Bold", 8)
-    c.drawString(22*mm, y_bottom, "Estimated increase in load A/ph")
-    draw_field(c, 75*mm, y_bottom - 2*mm, 30*mm, 5*mm, form_data.get('load_increase', ''))
+    c.drawString(22*mm, y_load_increase, "Estimated increase in load A/ph")
+    draw_field(c, 75*mm, y_load_increase - 2*mm, 30*mm, 5*mm, form_data.get('load_increase', ''))
     
-    y_bottom -= 7*mm
-    c.drawString(22*mm, y_bottom, "* Is increased load within capacity of installation/service mains?")
-    c.drawString(125*mm, y_bottom, "Yes")
-    draw_checkbox(c, 135*mm, y_bottom - 1*mm, checked=form_data.get('load_within_capacity') == 'Yes')
-    c.drawString(145*mm, y_bottom, "No")
-    draw_checkbox(c, 155*mm, y_bottom - 1*mm, checked=form_data.get('load_within_capacity') == 'No')
+    c.drawString(22*mm, y_first_question, "* Is increased load within capacity of installation/service mains?")
+    c.drawString(125*mm, y_first_question, "Yes")
+    draw_checkbox(c, 135*mm, y_first_question - 1*mm, checked=form_data.get('load_within_capacity') == 'Yes')
+    c.drawString(145*mm, y_first_question, "No")
+    draw_checkbox(c, 155*mm, y_first_question - 1*mm, checked=form_data.get('load_within_capacity') == 'No')
     
-    y_bottom -= 6*mm
-    c.drawString(22*mm, y_bottom, "* Is work connected to supply? (pending DSNP Inspection)")
-    c.drawString(125*mm, y_bottom, "Yes")
-    draw_checkbox(c, 135*mm, y_bottom - 1*mm, checked=form_data.get('work_connected_supply') == 'Yes')
-    c.drawString(145*mm, y_bottom, "No")
-    draw_checkbox(c, 155*mm, y_bottom - 1*mm, checked=form_data.get('work_connected_supply') == 'No')
+    c.drawString(22*mm, y_second_question, "* Is work connected to supply? (pending DSNP Inspection)")
+    c.drawString(125*mm, y_second_question, "Yes")
+    draw_checkbox(c, 135*mm, y_second_question - 1*mm, checked=form_data.get('work_connected_supply') == 'Yes')
+    c.drawString(145*mm, y_second_question, "No")
+    draw_checkbox(c, 155*mm, y_second_question - 1*mm, checked=form_data.get('work_connected_supply') == 'No')
     
     # ========== INSTALLERS LICENSE DETAILS SECTION ==========
     y -= 10*mm
