@@ -275,22 +275,22 @@ def generate_ccew_pdf(form_data):
     c.setFont("Helvetica-Bold", 11)
     c.drawString(22*mm, cust_header_y, "CUSTOMER DETAILS")
     c.setFont("Helvetica-Bold", 8)
-    c.drawString(22*mm, cust_section_start_y - 10*mm, "*First Name")
-    c.drawString(115*mm, cust_section_start_y - 10*mm, "*Last Name")
-    c.drawString(22*mm, cust_section_start_y - 18*mm, "Company Name")
-    c.drawString(22*mm, cust_section_start_y - 26*mm, "Floor")
-    c.drawString(48*mm, cust_section_start_y - 26*mm, "Unit")
-    c.drawString(77*mm, cust_section_start_y - 26*mm, "*Street Number")
-    c.drawString(115*mm, cust_section_start_y - 26*mm, "&/or")
-    c.drawString(130*mm, cust_section_start_y - 26*mm, "Lot/RMB")
-    c.drawString(22*mm, cust_section_start_y - 34*mm, "*Street Name")
-    c.drawString(115*mm, cust_section_start_y - 34*mm, "Nearest Cross Street")
-    c.drawString(22*mm, cust_section_start_y - 42*mm, "*Suburb")
-    c.drawString(115*mm, cust_section_start_y - 42*mm, "*State")
-    c.drawString(155*mm, cust_section_start_y - 42*mm, "*Post Code")
-    c.drawString(22*mm, cust_section_start_y - 50*mm, "Email")
-    c.drawString(115*mm, cust_section_start_y - 50*mm, "Office No.")
-    c.drawString(155*mm, cust_section_start_y - 50*mm, "Mobile No.")
+    c.drawString(22*mm, cust_section_start_y - 13*mm, "*First Name")
+    c.drawString(115*mm, cust_section_start_y - 13*mm, "*Last Name")
+    c.drawString(22*mm, cust_section_start_y - 21*mm, "Company Name")
+    c.drawString(22*mm, cust_section_start_y - 29*mm, "Floor")
+    c.drawString(48*mm, cust_section_start_y - 29*mm, "Unit")
+    c.drawString(77*mm, cust_section_start_y - 29*mm, "*Street Number")
+    c.drawString(115*mm, cust_section_start_y - 29*mm, "&/or")
+    c.drawString(130*mm, cust_section_start_y - 29*mm, "Lot/RMB")
+    c.drawString(22*mm, cust_section_start_y - 37*mm, "*Street Name")
+    c.drawString(115*mm, cust_section_start_y - 37*mm, "Nearest Cross Street")
+    c.drawString(22*mm, cust_section_start_y - 45*mm, "*Suburb")
+    c.drawString(115*mm, cust_section_start_y - 45*mm, "*State")
+    c.drawString(155*mm, cust_section_start_y - 45*mm, "*Post Code")
+    c.drawString(22*mm, cust_section_start_y - 53*mm, "Email")
+    c.drawString(115*mm, cust_section_start_y - 53*mm, "Office No.")
+    c.drawString(155*mm, cust_section_start_y - 53*mm, "Mobile No.")
     
     # Redraw all field boxes on top of green background
     draw_field(c, 21*mm, cust_section_start_y - 18*mm, 85*mm, 5*mm, form_data.get('customer_first_name', ''))
@@ -812,32 +812,32 @@ def generate_ccew_pdf(form_data):
     c.drawString(22*mm, installers_header_y, "INSTALLERS LICENSE DETAILS")
     
     c.setFont("Helvetica-Bold", 8)
-    y_label = installers_section_start_y - 10*mm
+    y_label = installers_section_start_y - 13*mm
     c.drawString(22*mm, y_label, "*First Name")
     c.drawString(115*mm, y_label, "*Last Name")
     
-    y_label -= 13*mm
+    y_label -= 8*mm
     c.drawString(22*mm, y_label, "Floor")
     c.drawString(48*mm, y_label, "Unit")
     c.drawString(77*mm, y_label, "*Street Number")
     c.drawString(115*mm, y_label, "&/or")
     c.drawString(130*mm, y_label, "Lot/RMB")
     
-    y_label -= 13*mm
+    y_label -= 8*mm
     c.drawString(22*mm, y_label, "*Street Name")
     c.drawString(115*mm, y_label, "Nearest Cross Street")
     
-    y_label -= 13*mm
+    y_label -= 8*mm
     c.drawString(22*mm, y_label, "*Suburb")
     c.drawString(115*mm, y_label, "*State")
     c.drawString(155*mm, y_label, "*Post Code")
     
-    y_label -= 13*mm
+    y_label -= 8*mm
     c.drawString(22*mm, y_label, "*Email")
     c.drawString(115*mm, y_label, "*Office Phone")
     c.drawString(155*mm, y_label, "Mobile Phone")
     
-    y_label -= 13*mm
+    y_label -= 8*mm
     c.drawString(22*mm, y_label, "*Qualified Supervisors No.")
     c.drawString(65*mm, y_label, "*Expiry Date")
     c.drawString(95*mm, y_label, "Or")
@@ -1051,32 +1051,32 @@ def generate_ccew_pdf(form_data):
     c.drawString(22*mm, testers_header_y, "TESTERS LICENSE DETAILS")
     
     c.setFont("Helvetica-Bold", 8)
-    y_label = testers_section_start_y - 10*mm
+    y_label = testers_section_start_y - 13*mm
     c.drawString(22*mm, y_label, "*First Name")
     c.drawString(115*mm, y_label, "*Last Name")
     
-    y_label -= 13*mm
+    y_label -= 8*mm
     c.drawString(22*mm, y_label, "Floor")
     c.drawString(48*mm, y_label, "Unit")
     c.drawString(77*mm, y_label, "*Street Number")
     c.drawString(115*mm, y_label, "&/or")
     c.drawString(130*mm, y_label, "Lot/RMB")
     
-    y_label -= 13*mm
+    y_label -= 8*mm
     c.drawString(22*mm, y_label, "*Street Name")
     c.drawString(115*mm, y_label, "Nearest Cross Street")
     
-    y_label -= 13*mm
+    y_label -= 8*mm
     c.drawString(22*mm, y_label, "*Suburb")
     c.drawString(115*mm, y_label, "*State")
     c.drawString(155*mm, y_label, "*Post Code")
     
-    y_label -= 13*mm
+    y_label -= 8*mm
     c.drawString(22*mm, y_label, "*Email")
     c.drawString(115*mm, y_label, "Office Phone")
     c.drawString(155*mm, y_label, "Mobile Phone")
     
-    y_label -= 13*mm
+    y_label -= 8*mm
     c.drawString(22*mm, y_label, "*Qualified Supervisors No.")
     c.drawString(65*mm, y_label, "*Expiry Date")
     c.drawString(95*mm, y_label, "Or")
