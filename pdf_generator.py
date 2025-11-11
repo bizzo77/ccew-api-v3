@@ -1,22 +1,35 @@
 """
-PDF Generator for CCEW Forms - Official Layout
-Generates a PDF that matches the official NSW CCEW form exactly
+PDF Generator for CCEW Forms - Matching Official Layout Exactly
+Generates a PDF that matches the official NSW CCEW form with green backgrounds and white labels
 """
 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
 from reportlab.lib.colors import HexColor, white, black
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
 import io
 import base64
+from datetime import datetime
 
 
 # Colors matching official form
 HEADER_GREEN = HexColor('#8DB04C')
+LABEL_GREEN = HexColor('#8DB04C')
 FIELD_BORDER = HexColor('#CCCCCC')
 TEXT_BLACK = black
+
+
+def format_date_australian(date_str):
+    """Convert date to Australian format DD/MM/YYYY"""
+    if not date_str:
+        return ''
+    try:
+        # Try parsing ISO format (YYYY-MM-DD)
+        dt = datetime.strptime(date_str, '%Y-%m-%d')
+        return dt.strftime('%d/%m/%Y')
+    except:
+        # If already in correct format or invalid, return as is
+        return date_str
 
 
 def draw_checkbox(c, x, y, size=3*mm, checked=False):
@@ -26,14 +39,40 @@ def draw_checkbox(c, x, y, size=3*mm, checked=False):
     c.rect(x, y, size, size, stroke=1, fill=0)
     if checked:
         # Draw an X
+        c.setStrokeColor(black)
+        c.setLineWidth(1)
         c.line(x, y, x + size, y + size)
         c.line(x + size, y, x, y + size)
+
+
+def draw_label_row(c, y, labels_and_widths, row_height=6*mm):
+    """
+    Draw a row of labels with green background
+    labels_and_widths: list of tuples [(label, x_position, width), ...]
+    Returns: y position after the row
+    """
+    x_start = 20*mm
+    total_width = 170*mm
+    
+    # Draw green background for entire row
+    c.setFillColor(LABEL_GREEN)
+    c.setStrokeColor(black)
+    c.rect(x_start, y, total_width, row_height, stroke=1, fill=1)
+    
+    # Draw labels in white
+    c.setFillColor(white)
+    c.setFont("Helvetica-Bold", 8)
+    
+    for label, x_pos, width in labels_and_widths:
+        c.drawString(x_pos, y + 1.5*mm, label)
+        
+    return y - row_height
 
 
 def draw_field_box(c, x, y, width, height, value='', font_size=9):
     """Draw a field box with optional value"""
     # Draw border
-    c.setStrokeColor(FIELD_BORDER)
+    c.setStrokeColor(black)
     c.setFillColor(white)
     c.setLineWidth(0.5)
     c.rect(x, y, width, height, stroke=1, fill=1)
@@ -42,7 +81,7 @@ def draw_field_box(c, x, y, width, height, value='', font_size=9):
     if value:
         c.setFillColor(TEXT_BLACK)
         c.setFont("Helvetica", font_size)
-        c.drawString(x + 2*mm, y + 2*mm, str(value))
+        c.drawString(x + 2*mm, y + 1.5*mm, str(value))
 
 
 def draw_green_header(c, y, text, width=170*mm):
@@ -51,7 +90,8 @@ def draw_green_header(c, y, text, width=170*mm):
     height = 7*mm
     
     c.setFillColor(HEADER_GREEN)
-    c.rect(x, y, width, height, stroke=0, fill=1)
+    c.setStrokeColor(black)
+    c.rect(x, y, width, height, stroke=1, fill=1)
     
     c.setFillColor(white)
     c.setFont("Helvetica-Bold", 11)
@@ -60,9 +100,15 @@ def draw_green_header(c, y, text, width=170*mm):
     return y - height
 
 
+def get_pdf_filename(form_data):
+    """Generate PDF filename"""
+    job_no = form_data.get('serial_no', 'UNKNOWN')
+    return f"CCEW_Form_Job_{job_no}.pdf"
+
+
 def generate_ccew_pdf(form_data):
     """
-    Generate a PDF document matching the official CCEW form
+    Generate a PDF document matching the official CCEW form exactly
     Returns: base64 encoded PDF string
     """
     buffer = io.BytesIO()
@@ -98,141 +144,135 @@ def generate_ccew_pdf(form_data):
     y = draw_green_header(c, y, "INSTALLATION ADDRESS")
     y -= 3*mm
     
-    # Property Name
-    c.setFont("Helvetica-Bold", 8)
-    c.setFillColor(white)
-    c.drawString(21*mm, y + 1*mm, "Property Name")
-    y -= 6*mm
+    # Property Name label row
+    y = draw_label_row(c, y, [("Property Name", 21*mm, 170*mm)])
     draw_field_box(c, 20*mm, y, 170*mm, 5*mm, form_data.get('property_name', ''))
+    y -= 5*mm
     
-    # Floor, Unit, Street Number, Lot/RMB
-    y -= 8*mm
-    c.setFillColor(white)
-    c.drawString(21*mm, y + 1*mm, "Floor")
-    c.drawString(50*mm, y + 1*mm, "Unit")
-    c.drawString(80*mm, y + 1*mm, "*Street Number")
-    c.drawString(115*mm, y + 1*mm, "&/or")
-    c.drawString(130*mm, y + 1*mm, "Lot/RMB")
-    y -= 6*mm
+    # Floor, Unit, Street Number, Lot/RMB label row
+    y -= 3*mm
+    y = draw_label_row(c, y, [
+        ("Floor", 21*mm, 25*mm),
+        ("Unit", 49*mm, 25*mm),
+        ("*Street Number", 77*mm, 30*mm),
+        ("&/or", 110*mm, 15*mm),
+        ("Lot/RMB", 129*mm, 61*mm)
+    ])
     draw_field_box(c, 20*mm, y, 25*mm, 5*mm, '')  # Floor
     draw_field_box(c, 48*mm, y, 25*mm, 5*mm, '')  # Unit
-    draw_field_box(c, 76*mm, y, 35*mm, 5*mm, form_data.get('install_street_number', ''))
+    draw_field_box(c, 76*mm, y, 30*mm, 5*mm, form_data.get('install_street_number', ''))
     draw_field_box(c, 128*mm, y, 62*mm, 5*mm, '')  # Lot/RMB
+    y -= 5*mm
     
-    # Street Name, Nearest Cross Street
-    y -= 8*mm
-    c.setFillColor(white)
-    c.drawString(21*mm, y + 1*mm, "*Street Name")
-    c.drawString(115*mm, y + 1*mm, "Nearest Cross Street")
-    y -= 6*mm
+    # Street Name, Nearest Cross Street label row
+    y -= 3*mm
+    y = draw_label_row(c, y, [
+        ("*Street Name", 21*mm, 85*mm),
+        ("Nearest Cross Street", 109*mm, 81*mm)
+    ])
     draw_field_box(c, 20*mm, y, 85*mm, 5*mm, form_data.get('install_street_name', ''))
     draw_field_box(c, 108*mm, y, 82*mm, 5*mm, form_data.get('nearest_cross_street', ''))
+    y -= 5*mm
     
-    # Suburb, State, Post Code
-    y -= 8*mm
-    c.setFillColor(white)
-    c.drawString(21*mm, y + 1*mm, "*Suburb")
-    c.drawString(115*mm, y + 1*mm, "*State")
-    c.drawString(155*mm, y + 1*mm, "*Post Code")
-    y -= 6*mm
+    # Suburb, State, Post Code label row
+    y -= 3*mm
+    y = draw_label_row(c, y, [
+        ("*Suburb", 21*mm, 85*mm),
+        ("*State", 109*mm, 40*mm),
+        ("*Post Code", 152*mm, 38*mm)
+    ])
     draw_field_box(c, 20*mm, y, 85*mm, 5*mm, form_data.get('install_suburb', ''))
     draw_field_box(c, 108*mm, y, 40*mm, 5*mm, form_data.get('install_state', 'NSW'))
     draw_field_box(c, 151*mm, y, 39*mm, 5*mm, form_data.get('install_postcode', ''))
+    y -= 5*mm
     
-    # Pit/Pillar, NMI, Meter No, AEMO
-    y -= 8*mm
-    c.setFillColor(white)
-    c.drawString(21*mm, y + 1*mm, "Pit/Pillar/Pole No.")
-    c.drawString(65*mm, y + 1*mm, "NMI")
-    c.drawString(100*mm, y + 1*mm, "Meter No.")
-    c.drawString(135*mm, y + 1*mm, "AEMO Metering Provider I.D.")
-    y -= 6*mm
+    # Pit/Pillar, NMI, Meter No, AEMO label row
+    y -= 3*mm
+    y = draw_label_row(c, y, [
+        ("Pit/Pillar/Pole No.", 21*mm, 40*mm),
+        ("NMI", 63*mm, 32*mm),
+        ("Meter No.", 98*mm, 32*mm),
+        ("AEMO Metering Provider I.D.", 133*mm, 57*mm)
+    ])
     draw_field_box(c, 20*mm, y, 40*mm, 5*mm, form_data.get('pit_pillar_pole_no', ''))
-    draw_field_box(c, 63*mm, y, 32*mm, 5*mm, form_data.get('nmi', ''))
-    draw_field_box(c, 98*mm, y, 32*mm, 5*mm, form_data.get('meter_no', ''))
-    draw_field_box(c, 133*mm, y, 57*mm, 5*mm, form_data.get('aemo_provider_id', ''))
+    draw_field_box(c, 62*mm, y, 32*mm, 5*mm, form_data.get('nmi', ''))
+    draw_field_box(c, 97*mm, y, 32*mm, 5*mm, form_data.get('meter_no', ''))
+    draw_field_box(c, 132*mm, y, 58*mm, 5*mm, form_data.get('aemo_provider_id', ''))
+    y -= 5*mm
     
     # SECTION 2: CUSTOMER DETAILS
-    y -= 12*mm
+    y -= 8*mm
     y = draw_green_header(c, y, "CUSTOMER DETAILS")
-    
-    # Checkbox for same address
-    y -= 8*mm
-    draw_checkbox(c, 165*mm, y)
-    c.setFont("Helvetica", 7)
-    c.setFillColor(black)
-    c.drawString(170*mm, y + 0.5*mm, "Please tick if Customer Address")
     y -= 3*mm
-    c.drawString(170*mm, y + 0.5*mm, "details same as installation details")
-    y += 3*mm
     
-    # First Name, Last Name
-    c.setFont("Helvetica-Bold", 8)
-    c.setFillColor(white)
-    c.drawString(21*mm, y + 1*mm, "*First Name")
-    c.drawString(105*mm, y + 1*mm, "*Last Name")
-    y -= 6*mm
-    customer_first = form_data.get('customer_first_name', '')
-    customer_last = form_data.get('customer_last_name', '')
-    draw_field_box(c, 20*mm, y, 80*mm, 5*mm, customer_first)
-    draw_field_box(c, 103*mm, y, 87*mm, 5*mm, customer_last)
+    # First Name, Last Name label row
+    y = draw_label_row(c, y, [
+        ("*First Name", 21*mm, 85*mm),
+        ("*Last Name", 109*mm, 81*mm)
+    ])
+    draw_field_box(c, 20*mm, y, 85*mm, 5*mm, form_data.get('customer_first_name', ''))
+    draw_field_box(c, 108*mm, y, 82*mm, 5*mm, form_data.get('customer_last_name', ''))
+    y -= 5*mm
     
-    # Company Name
-    y -= 8*mm
-    c.setFillColor(white)
-    c.drawString(21*mm, y + 1*mm, "Company Name")
-    y -= 6*mm
+    # Company Name label row
+    y -= 3*mm
+    y = draw_label_row(c, y, [("Company Name", 21*mm, 170*mm)])
     draw_field_box(c, 20*mm, y, 170*mm, 5*mm, form_data.get('customer_company_name', ''))
+    y -= 5*mm
     
-    # Floor, Unit, Street Number, Lot/RMB
-    y -= 8*mm
-    c.setFillColor(white)
-    c.drawString(21*mm, y + 1*mm, "Floor")
-    c.drawString(50*mm, y + 1*mm, "Unit")
-    c.drawString(80*mm, y + 1*mm, "*Street Number")
-    c.drawString(115*mm, y + 1*mm, "&/or")
-    c.drawString(130*mm, y + 1*mm, "Lot/RMB")
-    y -= 6*mm
-    draw_field_box(c, 20*mm, y, 25*mm, 5*mm, '')
-    draw_field_box(c, 48*mm, y, 25*mm, 5*mm, '')
-    draw_field_box(c, 76*mm, y, 35*mm, 5*mm, form_data.get('customer_street_number', ''))
-    draw_field_box(c, 128*mm, y, 62*mm, 5*mm, '')
+    # Floor, Unit, Street Number, Lot/RMB label row
+    y -= 3*mm
+    y = draw_label_row(c, y, [
+        ("Floor", 21*mm, 25*mm),
+        ("Unit", 49*mm, 25*mm),
+        ("*Street Number", 77*mm, 30*mm),
+        ("&/or", 110*mm, 15*mm),
+        ("Lot/RMB", 129*mm, 61*mm)
+    ])
+    draw_field_box(c, 20*mm, y, 25*mm, 5*mm, '')  # Floor
+    draw_field_box(c, 48*mm, y, 25*mm, 5*mm, '')  # Unit
+    draw_field_box(c, 76*mm, y, 30*mm, 5*mm, form_data.get('customer_street_number', ''))
+    draw_field_box(c, 128*mm, y, 62*mm, 5*mm, '')  # Lot/RMB
+    y -= 5*mm
     
-    # Street Name, Nearest Cross Street
-    y -= 8*mm
-    c.setFillColor(white)
-    c.drawString(21*mm, y + 1*mm, "*Street Name")
-    c.drawString(115*mm, y + 1*mm, "Nearest Cross Street")
-    y -= 6*mm
+    # Street Name, Nearest Cross Street label row
+    y -= 3*mm
+    y = draw_label_row(c, y, [
+        ("*Street Name", 21*mm, 85*mm),
+        ("Nearest Cross Street", 109*mm, 81*mm)
+    ])
     draw_field_box(c, 20*mm, y, 85*mm, 5*mm, form_data.get('customer_street_name', ''))
-    draw_field_box(c, 108*mm, y, 82*mm, 5*mm, '')
+    draw_field_box(c, 108*mm, y, 82*mm, 5*mm, '')  # Nearest Cross Street
+    y -= 5*mm
     
-    # Suburb, State, Post Code
-    y -= 8*mm
-    c.setFillColor(white)
-    c.drawString(21*mm, y + 1*mm, "*Suburb")
-    c.drawString(115*mm, y + 1*mm, "*State")
-    c.drawString(155*mm, y + 1*mm, "*Post Code")
-    y -= 6*mm
+    # Suburb, State, Post Code label row
+    y -= 3*mm
+    y = draw_label_row(c, y, [
+        ("*Suburb", 21*mm, 85*mm),
+        ("*State", 109*mm, 40*mm),
+        ("*Post Code", 152*mm, 38*mm)
+    ])
     draw_field_box(c, 20*mm, y, 85*mm, 5*mm, form_data.get('customer_suburb', ''))
     draw_field_box(c, 108*mm, y, 40*mm, 5*mm, form_data.get('customer_state', ''))
     draw_field_box(c, 151*mm, y, 39*mm, 5*mm, form_data.get('customer_postcode', ''))
+    y -= 5*mm
     
-    # Email, Office No, Mobile No
-    y -= 8*mm
-    c.setFillColor(white)
-    c.drawString(21*mm, y + 1*mm, "Email")
-    c.drawString(125*mm, y + 1*mm, "Office No.")
-    c.drawString(160*mm, y + 1*mm, "Mobile No.")
-    y -= 6*mm
-    draw_field_box(c, 20*mm, y, 100*mm, 5*mm, '')
-    draw_field_box(c, 123*mm, y, 30*mm, 5*mm, '')
-    draw_field_box(c, 156*mm, y, 34*mm, 5*mm, '')
+    # Email, Office No, Mobile No label row
+    y -= 3*mm
+    y = draw_label_row(c, y, [
+        ("Email", 21*mm, 85*mm),
+        ("Office No.", 109*mm, 40*mm),
+        ("Mobile No.", 152*mm, 38*mm)
+    ])
+    draw_field_box(c, 20*mm, y, 85*mm, 5*mm, form_data.get('customer_email', ''))
+    draw_field_box(c, 108*mm, y, 40*mm, 5*mm, form_data.get('customer_office_phone', ''))
+    draw_field_box(c, 151*mm, y, 39*mm, 5*mm, form_data.get('customer_mobile_phone', ''))
+    y -= 5*mm
     
     # SECTION 3: INSTALLATION DETAILS
-    y -= 12*mm
+    y -= 8*mm
     y = draw_green_header(c, y, "INSTALLATION DETAILS")
-    y -= 3*mm
+    y -= 5*mm
     
     # Type of Installation
     c.setFont("Helvetica-Bold", 8)
@@ -240,7 +280,6 @@ def generate_ccew_pdf(form_data):
     c.drawString(21*mm, y, "*Type of Installation")
     y -= 5*mm
     
-    # Installation type checkboxes
     inst_type = form_data.get('installation_type', '')
     draw_checkbox(c, 25*mm, y, checked=(inst_type == 'Residential'))
     c.setFont("Helvetica", 8)
@@ -276,23 +315,21 @@ def generate_ccew_pdf(form_data):
     c.drawString(150*mm, y + 0.5*mm, "Network connection")
     
     y -= 5*mm
-    # Work checkboxes - row 2
     draw_checkbox(c, 25*mm, y, checked=form_data.get('work_addition_alteration') == 'yes')
     c.drawString(30*mm, y + 0.5*mm, "Addition/alteration to existing")
     
-    draw_checkbox(c, 85*mm, y, checked=form_data.get('work_advanced_meter') == 'yes')
-    c.drawString(90*mm, y + 0.5*mm, "Install Advanced Meter")
+    draw_checkbox(c, 100*mm, y, checked=form_data.get('work_advanced_meter') == 'yes')
+    c.drawString(105*mm, y + 0.5*mm, "Install Advanced Meter")
     
     draw_checkbox(c, 145*mm, y, checked=form_data.get('work_ev_connection') == 'yes')
     c.drawString(150*mm, y + 0.5*mm, "EV Connection")
     
     y -= 5*mm
-    # Work checkboxes - row 3
     draw_checkbox(c, 25*mm, y, checked=form_data.get('work_reinspection') == 'yes')
     c.drawString(30*mm, y + 0.5*mm, "Re-inspection of non-compliant work")
     
-    c.drawString(90*mm, y + 0.5*mm, "Non-Compliance No.")
-    draw_field_box(c, 125*mm, y - 1*mm, 65*mm, 5*mm, form_data.get('non_compliance_no', ''))
+    c.drawString(100*mm, y + 0.5*mm, "Non-Compliance No.")
+    draw_field_box(c, 135*mm, y - 1*mm, 55*mm, 5*mm, form_data.get('non_compliance_no', ''))
     
     # Special Conditions
     y -= 8*mm
@@ -300,52 +337,52 @@ def generate_ccew_pdf(form_data):
     c.drawString(21*mm, y, "Special Conditions")
     y -= 5*mm
     
-    # Special conditions - row 1
     draw_checkbox(c, 60*mm, y, checked=form_data.get('special_over_100_amps') == 'yes')
     c.setFont("Helvetica", 8)
     c.drawString(65*mm, y + 0.5*mm, "Over 100 amps")
     
-    draw_checkbox(c, 105*mm, y, checked=form_data.get('special_hazardous_area') == 'yes')
-    c.drawString(110*mm, y + 0.5*mm, "Hazardous Area")
+    draw_checkbox(c, 110*mm, y, checked=form_data.get('special_hazardous_area') == 'yes')
+    c.drawString(115*mm, y + 0.5*mm, "Hazardous Area")
     
     draw_checkbox(c, 155*mm, y, checked=form_data.get('special_off_grid') == 'yes')
     c.drawString(160*mm, y + 0.5*mm, "Off Grid Installation")
     
     y -= 5*mm
-    # Special conditions - row 2
     draw_checkbox(c, 60*mm, y, checked=form_data.get('special_high_voltage') == 'yes')
     c.drawString(65*mm, y + 0.5*mm, "High Voltage")
     
-    draw_checkbox(c, 105*mm, y, checked=form_data.get('special_unmetered') == 'yes')
-    c.drawString(110*mm, y + 0.5*mm, "Unmetered Supply")
+    draw_checkbox(c, 110*mm, y, checked=form_data.get('special_unmetered') == 'yes')
+    c.drawString(115*mm, y + 0.5*mm, "Unmetered Supply")
     
-    draw_checkbox(c, 145*mm, y, checked=form_data.get('special_secondary_power') == 'yes')
-    c.drawString(150*mm, y + 0.5*mm, "Secondary Power Supply")
+    draw_checkbox(c, 155*mm, y, checked=form_data.get('special_secondary_power') == 'yes')
+    c.drawString(160*mm, y + 0.5*mm, "Secondary Power Supply")
     
     # ========== PAGE 2 ==========
     c.showPage()
-    y = height - 30*mm
+    y = height - 20*mm
     
     # SECTION 4: DETAILS OF EQUIPMENT
     y = draw_green_header(c, y, "*DETAILS OF EQUIPMENT")
-    y -= 3*mm
+    y -= 5*mm
     
     c.setFont("Helvetica", 8)
     c.setFillColor(black)
     c.drawString(21*mm, y, "Select equipment installed and estimate increase of work affected by the work carried out")
-    y -= 5*mm
+    y -= 8*mm
     
     # Equipment table
     table_x = 20*mm
     table_width = 170*mm
-    col_widths = [5*mm, 50*mm, 35*mm, 40*mm, 40*mm]
-    row_height = 7*mm
+    row_height = 6*mm
+    col_widths = [10*mm, 50*mm, 35*mm, 35*mm, 40*mm]
     
     # Table header
     c.setFillColor(HEADER_GREEN)
+    c.setStrokeColor(black)
     c.rect(table_x, y - row_height, table_width, row_height, stroke=1, fill=1)
     c.setFillColor(white)
     c.setFont("Helvetica-Bold", 8)
+    c.drawString(table_x + 2*mm, y - row_height + 2*mm, "")  # Checkbox column
     c.drawString(table_x + col_widths[0] + 2*mm, y - row_height + 2*mm, "EQUIPMENT")
     c.drawString(table_x + col_widths[0] + col_widths[1] + 2*mm, y - row_height + 2*mm, "RATING")
     c.drawString(table_x + col_widths[0] + col_widths[1] + col_widths[2] + 2*mm, y - row_height + 2*mm, "NUMBER INSTALLED")
@@ -376,7 +413,7 @@ def generate_ccew_pdf(form_data):
         draw_checkbox(c, table_x + 1*mm, y - row_height + 2*mm, checked=form_data.get(check_field) == 'yes')
         
         # Draw equipment name column (green background)
-        c.setFillColor(HEADER_GREEN)
+        c.setFillColor(LABEL_GREEN)
         c.rect(table_x + col_widths[0], y - row_height, col_widths[1], row_height, stroke=1, fill=1)
         c.setFillColor(white)
         c.setFont("Helvetica-Bold", 8)
@@ -404,128 +441,88 @@ def generate_ccew_pdf(form_data):
         
         y -= row_height
     
-    # SECTION 5: METERS
-    y -= 5*mm
-    y = draw_green_header(c, y, "*Meters - Installed (I), Removed (R), Existing (E)")
-    y -= 3*mm
-    
-    c.setFont("Helvetica", 8)
-    c.setFillColor(black)
-    c.drawString(21*mm, y, "Master/Sub Status - No (N), Master (M), Sub (S)")
-    y -= 5*mm
-    
-    # Meters table (simplified - showing structure)
-    c.setStrokeColor(black)
-    c.rect(20*mm, y - 30*mm, 170*mm, 30*mm, stroke=1, fill=0)
-    c.setFont("Helvetica", 7)
-    c.drawString(22*mm, y - 5*mm, "I  R  E")
-    c.drawString(35*mm, y - 5*mm, "Meter No.")
-    c.drawString(60*mm, y - 5*mm, "No. Dials")
-    c.drawString(80*mm, y - 5*mm, "Master/Sub Status")
-    c.drawString(115*mm, y - 5*mm, "Wired as Master/Sub")
-    c.drawString(150*mm, y - 5*mm, "Register No.")
-    
-    y -= 35*mm
-    
-    # Load questions
-    c.setFont("Helvetica", 8)
-    c.drawString(21*mm, y, "Estimated increase in load A/ph")
-    draw_field_box(c, 80*mm, y - 2*mm, 30*mm, 5*mm, '')
-    
-    y -= 8*mm
-    c.drawString(21*mm, y, "* Is increased load within capacity of installation/service mains?")
-    c.drawString(130*mm, y, "Yes")
-    draw_checkbox(c, 140*mm, y - 1*mm)
-    c.drawString(150*mm, y, "No")
-    draw_checkbox(c, 160*mm, y - 1*mm)
-    
-    y -= 6*mm
-    c.drawString(21*mm, y, "* Is work connected to supply? (pending DSNP Inspection)")
-    c.drawString(130*mm, y, "Yes")
-    draw_checkbox(c, 140*mm, y - 1*mm)
-    c.drawString(150*mm, y, "No")
-    draw_checkbox(c, 160*mm, y - 1*mm)
-    
-    # SECTION 6: INSTALLERS LICENSE DETAILS
-    y -= 12*mm
+    # SECTION 5: INSTALLERS LICENSE DETAILS
+    y -= 10*mm
     y = draw_green_header(c, y, "INSTALLERS LICENSE DETAILS")
     y -= 3*mm
     
-    # First Name, Last Name
-    c.setFont("Helvetica-Bold", 8)
-    c.setFillColor(white)
-    c.drawString(21*mm, y + 1*mm, "*First Name")
-    c.drawString(105*mm, y + 1*mm, "*Last Name")
-    y -= 6*mm
-    installer_first = form_data.get('installer_first_name', '')
-    installer_last = form_data.get('installer_last_name', '')
-    draw_field_box(c, 20*mm, y, 80*mm, 5*mm, installer_first)
-    draw_field_box(c, 103*mm, y, 87*mm, 5*mm, installer_last)
+    # First Name, Last Name label row
+    y = draw_label_row(c, y, [
+        ("*First Name", 21*mm, 85*mm),
+        ("*Last Name", 109*mm, 81*mm)
+    ])
+    draw_field_box(c, 20*mm, y, 85*mm, 5*mm, form_data.get('installer_first_name', ''))
+    draw_field_box(c, 108*mm, y, 82*mm, 5*mm, form_data.get('installer_last_name', ''))
+    y -= 5*mm
     
-    # Floor, Unit, Street Number, Lot/RMB
-    y -= 8*mm
-    c.setFillColor(white)
-    c.drawString(21*mm, y + 1*mm, "Floor")
-    c.drawString(50*mm, y + 1*mm, "Unit")
-    c.drawString(80*mm, y + 1*mm, "*Street Number")
-    c.drawString(115*mm, y + 1*mm, "&/or")
-    c.drawString(130*mm, y + 1*mm, "Lot/RMB")
-    y -= 6*mm
-    draw_field_box(c, 20*mm, y, 25*mm, 5*mm, '')
-    draw_field_box(c, 48*mm, y, 25*mm, 5*mm, '')
-    draw_field_box(c, 76*mm, y, 35*mm, 5*mm, form_data.get('installer_street_number', ''))
-    draw_field_box(c, 128*mm, y, 62*mm, 5*mm, '')
+    # Floor, Unit, Street Number, Lot/RMB label row
+    y -= 3*mm
+    y = draw_label_row(c, y, [
+        ("Floor", 21*mm, 25*mm),
+        ("Unit", 49*mm, 25*mm),
+        ("*Street Number", 77*mm, 30*mm),
+        ("&/or", 110*mm, 15*mm),
+        ("Lot/RMB", 129*mm, 61*mm)
+    ])
+    draw_field_box(c, 20*mm, y, 25*mm, 5*mm, '')  # Floor
+    draw_field_box(c, 48*mm, y, 25*mm, 5*mm, '')  # Unit
+    draw_field_box(c, 76*mm, y, 30*mm, 5*mm, form_data.get('installer_street_number', ''))
+    draw_field_box(c, 128*mm, y, 62*mm, 5*mm, '')  # Lot/RMB
+    y -= 5*mm
     
-    # Street Name, Nearest Cross Street
-    y -= 8*mm
-    c.setFillColor(white)
-    c.drawString(21*mm, y + 1*mm, "*Street Name")
-    c.drawString(115*mm, y + 1*mm, "Nearest Cross Street")
-    y -= 6*mm
+    # Street Name, Nearest Cross Street label row
+    y -= 3*mm
+    y = draw_label_row(c, y, [
+        ("*Street Name", 21*mm, 85*mm),
+        ("Nearest Cross Street", 109*mm, 81*mm)
+    ])
     draw_field_box(c, 20*mm, y, 85*mm, 5*mm, form_data.get('installer_street_name', ''))
-    draw_field_box(c, 108*mm, y, 82*mm, 5*mm, '')
+    draw_field_box(c, 108*mm, y, 82*mm, 5*mm, '')  # Nearest Cross Street
+    y -= 5*mm
     
-    # Suburb, State, Post Code
-    y -= 8*mm
-    c.setFillColor(white)
-    c.drawString(21*mm, y + 1*mm, "*Suburb")
-    c.drawString(115*mm, y + 1*mm, "*State")
-    c.drawString(155*mm, y + 1*mm, "*Post Code")
-    y -= 6*mm
+    # Suburb, State, Post Code label row
+    y -= 3*mm
+    y = draw_label_row(c, y, [
+        ("*Suburb", 21*mm, 85*mm),
+        ("*State", 109*mm, 40*mm),
+        ("*Post Code", 152*mm, 38*mm)
+    ])
     draw_field_box(c, 20*mm, y, 85*mm, 5*mm, form_data.get('installer_suburb', ''))
     draw_field_box(c, 108*mm, y, 40*mm, 5*mm, form_data.get('installer_state', ''))
     draw_field_box(c, 151*mm, y, 39*mm, 5*mm, form_data.get('installer_postcode', ''))
+    y -= 5*mm
     
-    # Email, Office No, Mobile No
-    y -= 8*mm
-    c.setFillColor(white)
-    c.drawString(21*mm, y + 1*mm, "Email")
-    c.drawString(125*mm, y + 1*mm, "Office No.")
-    c.drawString(160*mm, y + 1*mm, "Mobile No.")
-    y -= 6*mm
-    draw_field_box(c, 20*mm, y, 100*mm, 5*mm, form_data.get('installer_email', ''))
-    draw_field_box(c, 123*mm, y, 30*mm, 5*mm, form_data.get('installer_office_phone', ''))
-    draw_field_box(c, 156*mm, y, 34*mm, 5*mm, form_data.get('installer_mobile_phone', ''))
+    # Email, Office Phone, Mobile Phone label row
+    y -= 3*mm
+    y = draw_label_row(c, y, [
+        ("*Email", 21*mm, 85*mm),
+        ("*Office Phone", 109*mm, 40*mm),
+        ("Mobile Phone", 152*mm, 38*mm)
+    ])
+    draw_field_box(c, 20*mm, y, 85*mm, 5*mm, form_data.get('installer_email', ''))
+    draw_field_box(c, 108*mm, y, 40*mm, 5*mm, form_data.get('installer_office_phone', ''))
+    draw_field_box(c, 151*mm, y, 39*mm, 5*mm, form_data.get('installer_mobile_phone', ''))
+    y -= 5*mm
     
-    # License details
-    y -= 8*mm
-    c.setFillColor(white)
-    c.drawString(21*mm, y + 1*mm, "*Qualified Supervisors No.")
-    c.drawString(70*mm, y + 1*mm, "*Expiry Date")
-    c.drawString(105*mm, y + 1*mm, "Or")
-    c.drawString(115*mm, y + 1*mm, "*Contractor's License No.")
-    c.drawString(165*mm, y + 1*mm, "*Expiry Date")
-    y -= 6*mm
-    draw_field_box(c, 20*mm, y, 45*mm, 5*mm, '')
-    draw_field_box(c, 68*mm, y, 30*mm, 5*mm, '')
-    draw_field_box(c, 113*mm, y, 45*mm, 5*mm, form_data.get('installer_license_no', ''))
-    draw_field_box(c, 161*mm, y, 29*mm, 5*mm, form_data.get('installer_license_expiry', ''))
+    # License details label row
+    y -= 3*mm
+    y = draw_label_row(c, y, [
+        ("Contractor License Class", 21*mm, 42*mm),
+        ("Electrician License Class", 66*mm, 42*mm),
+        ("*License Number", 111*mm, 40*mm),
+        ("*License Expiry", 154*mm, 36*mm)
+    ])
+    draw_field_box(c, 20*mm, y, 42*mm, 5*mm, '')  # Contractor License Class
+    draw_field_box(c, 65*mm, y, 42*mm, 5*mm, '')  # Electrician License Class
+    draw_field_box(c, 110*mm, y, 40*mm, 5*mm, form_data.get('installer_license_no', ''))
+    draw_field_box(c, 153*mm, y, 37*mm, 5*mm, format_date_australian(form_data.get('installer_license_expiry', '')))
+    y -= 5*mm
     
     # ========== PAGE 3 ==========
     c.showPage()
-    y = height - 30*mm
+    y = height - 20*mm
     
-    # SECTION 7: TEST REPORT
+    # SECTION 6: TEST REPORT
     y = draw_green_header(c, y, "*TEST REPORT")
     y -= 5*mm
     
@@ -533,128 +530,136 @@ def generate_ccew_pdf(form_data):
     c.setFillColor(black)
     c.drawString(21*mm, y, "In respect to the test carried out by me on the above mentioned installation, I certify that:")
     y -= 5*mm
-    c.drawString(21*mm, y, "1.   I have carried out the test below and that the installation has passed the following requirements:")
+    
+    c.drawString(21*mm, y, "1.  I have carried out the test below and that the installation has passed the following requirements:")
     y -= 5*mm
     
     # Test checkboxes
-    test_items = [
-        ('test_earthing', 'Earthing system integrity'),
-        ('test_rcd', 'Residual current device operational'),
-        ('test_insulation', 'Insulation resistance Mohms'),
-        ('test_visual', 'Visual check that installation is suitable for connection to supply'),
-        ('test_polarity', 'Polarity'),
-        ('test_standalone', 'Stand-Alone system complies with AS4509'),
-        ('test_current', 'Correct current connections'),
-        ('test_fault_loop', 'Fault loop impedance (if necessary)'),
-    ]
+    draw_checkbox(c, 25*mm, y, checked=form_data.get('test_earthing') == 'yes')
+    c.drawString(30*mm, y + 0.5*mm, "Earthing system integrity")
+    y -= 5*mm
     
-    for field, label in test_items:
-        draw_checkbox(c, 25*mm, y, checked=form_data.get(field) == 'yes')
-        c.drawString(30*mm, y + 0.5*mm, label)
-        y -= 5*mm
+    draw_checkbox(c, 25*mm, y, checked=form_data.get('test_rcd') == 'yes')
+    c.drawString(30*mm, y + 0.5*mm, "Residual current device operational")
+    y -= 5*mm
     
-    y -= 2*mm
-    c.drawString(21*mm, y, "2.   I confirm that I have visually checked that the installation described in this Certificate complies with the")
+    draw_checkbox(c, 25*mm, y, checked=form_data.get('test_insulation') == 'yes')
+    c.drawString(30*mm, y + 0.5*mm, "Insulation resistance Mohms")
+    y -= 5*mm
+    
+    draw_checkbox(c, 25*mm, y, checked=form_data.get('test_visual_check') == 'yes')
+    c.drawString(30*mm, y + 0.5*mm, "Visual check that installation is suitable for connection to supply")
+    y -= 5*mm
+    
+    draw_checkbox(c, 25*mm, y, checked=form_data.get('test_polarity') == 'yes')
+    c.drawString(30*mm, y + 0.5*mm, "Polarity")
+    y -= 5*mm
+    
+    draw_checkbox(c, 25*mm, y, checked=form_data.get('test_as4509') == 'yes')
+    c.drawString(30*mm, y + 0.5*mm, "Stand-Alone system complies with AS4509")
+    y -= 5*mm
+    
+    draw_checkbox(c, 25*mm, y, checked=form_data.get('test_current_connections') == 'yes')
+    c.drawString(30*mm, y + 0.5*mm, "Correct current connections")
+    y -= 5*mm
+    
+    draw_checkbox(c, 25*mm, y, checked=form_data.get('test_fault_loop') == 'yes')
+    c.drawString(30*mm, y + 0.5*mm, "Fault loop impedance (if necessary)")
+    y -= 8*mm
+    
+    c.drawString(21*mm, y, "2.  I confirm that I have visually checked that the installation described in this Certificate complies with the")
     y -= 4*mm
-    c.drawString(26*mm, y, "relevant Acts, Regulations, Codes and Standards:")
+    c.drawString(25*mm, y, "relevant Acts, Regulations, Codes and Standards:")
+    y -= 8*mm
     
-    y -= 6*mm
-    c.drawString(21*mm, y, "3.   *The test was completed on")
-    draw_field_box(c, 75*mm, y - 2*mm, 40*mm, 5*mm, form_data.get('test_date', ''))
+    c.drawString(21*mm, y, "3.  *The test was completed on")
+    draw_field_box(c, 70*mm, y - 2*mm, 40*mm, 5*mm, format_date_australian(form_data.get('test_date', '')))
+    y -= 10*mm
     
-    # SECTION 8: TESTERS LICENSE DETAILS
-    y -= 12*mm
+    # SECTION 7: TESTERS LICENSE DETAILS
     y = draw_green_header(c, y, "TESTERS LICENSE DETAILS")
-    
-    # Checkbox for same as installer
-    y -= 8*mm
-    draw_checkbox(c, 165*mm, y)
-    c.setFont("Helvetica", 7)
-    c.setFillColor(black)
-    c.drawString(170*mm, y + 0.5*mm, "Please tick if Testers Lic. details")
     y -= 3*mm
-    c.drawString(170*mm, y + 0.5*mm, "same as Installers Lic. details")
-    y += 3*mm
     
-    # First Name, Last Name
-    c.setFont("Helvetica-Bold", 8)
-    c.setFillColor(white)
-    c.drawString(21*mm, y + 1*mm, "*First Name")
-    c.drawString(105*mm, y + 1*mm, "*Last Name")
-    y -= 6*mm
-    tester_first = form_data.get('tester_first_name', '')
-    tester_last = form_data.get('tester_last_name', '')
-    draw_field_box(c, 20*mm, y, 80*mm, 5*mm, tester_first)
-    draw_field_box(c, 103*mm, y, 87*mm, 5*mm, tester_last)
+    # First Name, Last Name label row
+    y = draw_label_row(c, y, [
+        ("*First Name", 21*mm, 85*mm),
+        ("*Last Name", 109*mm, 81*mm)
+    ])
+    draw_field_box(c, 20*mm, y, 85*mm, 5*mm, form_data.get('tester_first_name', ''))
+    draw_field_box(c, 108*mm, y, 82*mm, 5*mm, form_data.get('tester_last_name', ''))
+    y -= 5*mm
     
-    # Floor, Unit, Street Number, Lot/RMB
-    y -= 8*mm
-    c.setFillColor(white)
-    c.drawString(21*mm, y + 1*mm, "Floor")
-    c.drawString(50*mm, y + 1*mm, "Unit")
-    c.drawString(80*mm, y + 1*mm, "*Street Number")
-    c.drawString(115*mm, y + 1*mm, "&/or")
-    c.drawString(130*mm, y + 1*mm, "Lot/RMB")
-    y -= 6*mm
-    draw_field_box(c, 20*mm, y, 25*mm, 5*mm, '')
-    draw_field_box(c, 48*mm, y, 25*mm, 5*mm, '')
-    draw_field_box(c, 76*mm, y, 35*mm, 5*mm, form_data.get('tester_street_number', ''))
-    draw_field_box(c, 128*mm, y, 62*mm, 5*mm, '')
+    # Floor, Unit, Street Number, Lot/RMB label row
+    y -= 3*mm
+    y = draw_label_row(c, y, [
+        ("Floor", 21*mm, 25*mm),
+        ("Unit", 49*mm, 25*mm),
+        ("*Street Number", 77*mm, 30*mm),
+        ("&/or", 110*mm, 15*mm),
+        ("Lot/RMB", 129*mm, 61*mm)
+    ])
+    draw_field_box(c, 20*mm, y, 25*mm, 5*mm, '')  # Floor
+    draw_field_box(c, 48*mm, y, 25*mm, 5*mm, '')  # Unit
+    draw_field_box(c, 76*mm, y, 30*mm, 5*mm, form_data.get('tester_street_number', ''))
+    draw_field_box(c, 128*mm, y, 62*mm, 5*mm, '')  # Lot/RMB
+    y -= 5*mm
     
-    # Street Name, Nearest Cross Street
-    y -= 8*mm
-    c.setFillColor(white)
-    c.drawString(21*mm, y + 1*mm, "*Street Name")
-    c.drawString(115*mm, y + 1*mm, "Nearest Cross Street")
-    y -= 6*mm
+    # Street Name, Nearest Cross Street label row
+    y -= 3*mm
+    y = draw_label_row(c, y, [
+        ("*Street Name", 21*mm, 85*mm),
+        ("Nearest Cross Street", 109*mm, 81*mm)
+    ])
     draw_field_box(c, 20*mm, y, 85*mm, 5*mm, form_data.get('tester_street_name', ''))
-    draw_field_box(c, 108*mm, y, 82*mm, 5*mm, '')
+    draw_field_box(c, 108*mm, y, 82*mm, 5*mm, '')  # Nearest Cross Street
+    y -= 5*mm
     
-    # Suburb, State, Post Code
-    y -= 8*mm
-    c.setFillColor(white)
-    c.drawString(21*mm, y + 1*mm, "*Suburb")
-    c.drawString(115*mm, y + 1*mm, "*State")
-    c.drawString(155*mm, y + 1*mm, "*Post Code")
-    y -= 6*mm
+    # Suburb, State, Post Code label row
+    y -= 3*mm
+    y = draw_label_row(c, y, [
+        ("*Suburb", 21*mm, 85*mm),
+        ("*State", 109*mm, 40*mm),
+        ("*Post Code", 152*mm, 38*mm)
+    ])
     draw_field_box(c, 20*mm, y, 85*mm, 5*mm, form_data.get('tester_suburb', ''))
     draw_field_box(c, 108*mm, y, 40*mm, 5*mm, form_data.get('tester_state', ''))
     draw_field_box(c, 151*mm, y, 39*mm, 5*mm, form_data.get('tester_postcode', ''))
+    y -= 5*mm
     
-    # Email, Office No, Mobile No
-    y -= 8*mm
-    c.setFillColor(white)
-    c.drawString(21*mm, y + 1*mm, "*Email")
-    c.drawString(125*mm, y + 1*mm, "Office No.")
-    c.drawString(160*mm, y + 1*mm, "Mobile No.")
-    y -= 6*mm
-    draw_field_box(c, 20*mm, y, 100*mm, 5*mm, form_data.get('tester_email', ''))
-    draw_field_box(c, 123*mm, y, 30*mm, 5*mm, '')
-    draw_field_box(c, 156*mm, y, 34*mm, 5*mm, '')
+    # Email, Office Phone, Mobile Phone label row
+    y -= 3*mm
+    y = draw_label_row(c, y, [
+        ("*Email", 21*mm, 85*mm),
+        ("Office Phone", 109*mm, 40*mm),
+        ("Mobile Phone", 152*mm, 38*mm)
+    ])
+    draw_field_box(c, 20*mm, y, 85*mm, 5*mm, form_data.get('tester_email', ''))
+    draw_field_box(c, 108*mm, y, 40*mm, 5*mm, form_data.get('tester_office_phone', ''))
+    draw_field_box(c, 151*mm, y, 39*mm, 5*mm, form_data.get('tester_mobile_phone', ''))
+    y -= 5*mm
     
-    # License details
+    # License details label row
+    y -= 3*mm
+    y = draw_label_row(c, y, [
+        ("Contractor License Class", 21*mm, 42*mm),
+        ("Electrician License Class", 66*mm, 42*mm),
+        ("*License Number", 111*mm, 40*mm),
+        ("*License Expiry", 154*mm, 36*mm)
+    ])
+    draw_field_box(c, 20*mm, y, 42*mm, 5*mm, '')  # Contractor License Class
+    draw_field_box(c, 65*mm, y, 42*mm, 5*mm, '')  # Electrician License Class
+    draw_field_box(c, 110*mm, y, 40*mm, 5*mm, form_data.get('tester_license_no', ''))
+    draw_field_box(c, 153*mm, y, 37*mm, 5*mm, format_date_australian(form_data.get('tester_license_expiry', '')))
     y -= 8*mm
-    c.setFillColor(white)
-    c.drawString(21*mm, y + 1*mm, "*Qualified Supervisors No.")
-    c.drawString(70*mm, y + 1*mm, "*Expiry Date")
-    c.drawString(105*mm, y + 1*mm, "Or")
-    c.drawString(115*mm, y + 1*mm, "*Contractor's License No.")
-    c.drawString(165*mm, y + 1*mm, "*Expiry Date")
-    y -= 6*mm
-    draw_field_box(c, 20*mm, y, 45*mm, 5*mm, '')
-    draw_field_box(c, 68*mm, y, 30*mm, 5*mm, '')
-    draw_field_box(c, 113*mm, y, 45*mm, 5*mm, form_data.get('tester_license_no', ''))
-    draw_field_box(c, 161*mm, y, 29*mm, 5*mm, form_data.get('tester_license_expiry', ''))
     
-    y -= 8*mm
-    c.setFont("Helvetica", 7)
+    c.setFont("Helvetica", 8)
     c.setFillColor(black)
     c.drawString(21*mm, y, "In my capacity as the Tester, I certify that the electrical work carried out on the above mentioned property")
-    y -= 3*mm
+    y -= 4*mm
     c.drawString(21*mm, y, "was completed by the nominated electrician")
-    
-    # SECTION 9: SUBMIT CCEW
     y -= 10*mm
+    
+    # SECTION 8: SUBMIT CCEW
     y = draw_green_header(c, y, "*SUBMIT CCEW")
     y -= 5*mm
     
@@ -664,53 +669,23 @@ def generate_ccew_pdf(form_data):
     y -= 4*mm
     c.drawString(21*mm, y, "CCEW directly to that provider")
     y -= 6*mm
-    draw_field_box(c, 20*mm, y, 170*mm, 5*mm, form_data.get('energy_provider', ''))
+    draw_field_box(c, 20*mm, y - 2*mm, 170*mm, 5*mm, form_data.get('energy_provider', ''))
+    y -= 10*mm
     
-    y -= 8*mm
     c.drawString(21*mm, y, "Please enter the meter providers email to send a copy of this CCEW directly to that provider")
     y -= 6*mm
-    draw_field_box(c, 20*mm, y, 170*mm, 5*mm, '')
+    draw_field_box(c, 20*mm, y - 2*mm, 170*mm, 5*mm, '')
+    y -= 10*mm
     
-    y -= 8*mm
-    c.drawString(21*mm, y, "Please confirm the owners email address to send a copy of this CCEW directly to the property owner")
-    y -= 6*mm
-    draw_field_box(c, 20*mm, y, 170*mm, 5*mm, '')
+    # Signature
+    c.drawString(21*mm, y, "Signature:")
+    draw_field_box(c, 20*mm, y - 8*mm, 80*mm, 20*mm, form_data.get('signature', ''))
     
-    y -= 8*mm
-    c.drawString(21*mm, y, "I certify that the information provided in this Certificate Compliance Electrical Work (CCEW) is true")
-    y -= 4*mm
-    c.drawString(21*mm, y, "and correct.")
-    
-    y -= 8*mm
-    draw_field_box(c, 20*mm, y, 60*mm, 10*mm, '')
-    c.setFont("Helvetica-Bold", 8)
-    c.drawString(21*mm, y - 5*mm, "*Signature")
-    c.setFont("Helvetica-Oblique", 7)
-    c.drawString(21*mm, y - 8*mm, "Signature is only required when")
-    c.drawString(21*mm, y - 11*mm, "providing as a printed copy")
-    
-    # Signature value
-    c.setFont("Helvetica", 10)
-    c.drawString(22*mm, y + 3*mm, form_data.get('signature', ''))
-    
-    # Footer note
-    y -= 15*mm
-    c.setFont("Helvetica", 6)
-    c.drawString(21*mm, y, "If completing this CCEW electronically, please click the SUBMIT button to generate an email with a copy of the CCEW which you can save and send to the")
-    y -= 3*mm
-    c.drawString(21*mm, y, "NSW Regulator, Customer, the Service Provider and Meter Provider.")
-    
-    # Save the PDF
+    # Finalize PDF
     c.save()
     
-    # Get the PDF data and encode as base64
-    pdf_data = buffer.getvalue()
+    # Get PDF bytes and encode to base64
+    pdf_bytes = buffer.getvalue()
     buffer.close()
     
-    return base64.b64encode(pdf_data).decode('utf-8')
-
-
-def get_pdf_filename(form_data):
-    """Generate a filename for the PDF"""
-    job_no = form_data.get('serial_no', 'Unknown')
-    return f"CCEW_Form_Job_{job_no}.pdf"
+    return base64.b64encode(pdf_bytes).decode('utf-8')
