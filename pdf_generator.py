@@ -409,6 +409,18 @@ def generate_ccew_pdf(form_data):
     c.drawString(110*mm, equip_section_start_y - 17*mm, "NUMBER INSTALLED")
     c.drawString(150*mm, equip_section_start_y - 17*mm, "PARTICULARS")
     
+    # Redraw equipment rows on top of green background
+    y_row = equip_section_start_y - 22*mm
+    c.setFont("Helvetica", 8)
+    for name, check_field, rating_field, number_field, particulars_field in equipment:
+        draw_checkbox(c, 22*mm, y_row, checked=form_data.get(check_field) == 'yes')
+        c.setFillColor(white)
+        c.drawString(27*mm, y_row + 0.5*mm, name)
+        draw_field(c, 72*mm, y_row, 32*mm, 5*mm, form_data.get(rating_field, ''))
+        draw_field(c, 107*mm, y_row, 35*mm, 5*mm, form_data.get(number_field, ''))
+        draw_field(c, 145*mm, y_row, 44*mm, 5*mm, form_data.get(particulars_field, ''))
+        y_row -= 6*mm
+    
     # ========== METERS SECTION ==========
     y -= 5*mm
     meters_section_start_y = y
@@ -559,18 +571,56 @@ def generate_ccew_pdf(form_data):
     c.drawString(165*mm, meters_section_start_y - 15*mm, "Reading")
     c.drawString(180*mm, meters_section_start_y - 15*mm, "Tariff")
     
-    # Redraw bottom labels in white
+    # Redraw all meter rows on top of green background
+    y_meter = meters_section_start_y - 20*mm
+    c.setFont("Helvetica", 7)
+    for i in range(8):
+        if i < 4:
+            meter = meters_data[i]
+            draw_checkbox(c, 22*mm, y_meter, size=2.5*mm, checked=meter['i'])
+            draw_checkbox(c, 27*mm, y_meter, size=2.5*mm, checked=meter['r'])
+            draw_checkbox(c, 32*mm, y_meter, size=2.5*mm, checked=meter['e'])
+            draw_field(c, 37*mm, y_meter, 24*mm, 4*mm, meter['number'])
+            draw_field(c, 63*mm, y_meter, 18*mm, 4*mm, meter['dials'])
+            draw_field(c, 83*mm, y_meter, 28*mm, 4*mm, meter['master_sub'])
+            draw_field(c, 113*mm, y_meter, 28*mm, 4*mm, meter['wired_as'])
+            draw_field(c, 143*mm, y_meter, 18*mm, 4*mm, meter['register'])
+            draw_field(c, 163*mm, y_meter, 13*mm, 4*mm, meter['reading'])
+            draw_field(c, 178*mm, y_meter, 11*mm, 4*mm, meter['tariff'])
+        else:
+            # Empty rows
+            draw_checkbox(c, 22*mm, y_meter, size=2.5*mm)
+            draw_checkbox(c, 27*mm, y_meter, size=2.5*mm)
+            draw_checkbox(c, 32*mm, y_meter, size=2.5*mm)
+            draw_field(c, 37*mm, y_meter, 24*mm, 4*mm, '')
+            draw_field(c, 63*mm, y_meter, 18*mm, 4*mm, '')
+            draw_field(c, 83*mm, y_meter, 28*mm, 4*mm, '')
+            draw_field(c, 113*mm, y_meter, 28*mm, 4*mm, '')
+            draw_field(c, 143*mm, y_meter, 18*mm, 4*mm, '')
+            draw_field(c, 163*mm, y_meter, 13*mm, 4*mm, '')
+            draw_field(c, 178*mm, y_meter, 11*mm, 4*mm, '')
+        y_meter -= 5*mm
+    
+    # Redraw bottom section with fields and checkboxes
     y_bottom = meters_section_end_y + 12*mm
+    c.setFillColor(white)
     c.setFont("Helvetica-Bold", 8)
     c.drawString(22*mm, y_bottom, "Estimated increase in load A/ph")
+    draw_field(c, 75*mm, y_bottom - 2*mm, 30*mm, 5*mm, form_data.get('load_increase', ''))
+    
     y_bottom -= 7*mm
     c.drawString(22*mm, y_bottom, "* Is increased load within capacity of installation/service mains?")
     c.drawString(125*mm, y_bottom, "Yes")
+    draw_checkbox(c, 135*mm, y_bottom - 1*mm, checked=form_data.get('load_within_capacity') == 'Yes')
     c.drawString(145*mm, y_bottom, "No")
+    draw_checkbox(c, 155*mm, y_bottom - 1*mm, checked=form_data.get('load_within_capacity') == 'No')
+    
     y_bottom -= 6*mm
     c.drawString(22*mm, y_bottom, "* Is work connected to supply? (pending DSNP Inspection)")
     c.drawString(125*mm, y_bottom, "Yes")
+    draw_checkbox(c, 135*mm, y_bottom - 1*mm, checked=form_data.get('work_connected_supply') == 'Yes')
     c.drawString(145*mm, y_bottom, "No")
+    draw_checkbox(c, 155*mm, y_bottom - 1*mm, checked=form_data.get('work_connected_supply') == 'No')
     
     # ========== INSTALLERS LICENSE DETAILS SECTION ==========
     y -= 10*mm
