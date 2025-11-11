@@ -260,64 +260,271 @@
             </table>
             
             <!-- SECTION 5: METERS -->
-            <h2>5. Meters</h2>
+            <h2>5. Meters - Installed (I), Removed (R), Existing (E)</h2>
+            <p style="font-size: 0.9em; color: #666;">Add up to 4 meters. For each meter, check I, R, or E and fill in the details.</p>
             
-            <div class="field-group">
-                <label>Meter Status</label>
-                <div class="checkbox-group">
-                    <label><input type="radio" name="meter_status" value="Installed"> Installed (I)</label>
-                    <label><input type="radio" name="meter_status" value="Removed"> Removed (R)</label>
-                    <label><input type="radio" name="meter_status" value="Existing"> Existing (E)</label>
-                </div>
-            </div>
-            
-            <div class="field-group">
-                <label>Meter No.</label>
-                <input type="text" name="meter_number" placeholder="Enter meter number">
-            </div>
-            
-            <div class="row">
-                <div class="col">
+            <div id="meters-container">
+                <!-- Meter Row 1 -->
+                <div class="meter-row" style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; background: #f9f9f9;">
+                    <h4 style="margin-top: 0;">Meter 1</h4>
                     <div class="field-group">
-                        <label>No. of Dials</label>
-                        <input type="number" name="meter_dials" placeholder="5">
+                        <label>Status *</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="meter_1_i" value="yes"> I (Installed)</label>
+                            <label><input type="checkbox" name="meter_1_r" value="yes"> R (Removed)</label>
+                            <label><input type="checkbox" name="meter_1_e" value="yes"> E (Existing)</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Meter No.</label>
+                                <input type="text" name="meter_1_number" placeholder="Meter number">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="field-group">
+                                <label>No. Dials</label>
+                                <input type="text" name="meter_1_dials" placeholder="5">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Master/Sub Status</label>
+                                <select name="meter_1_master_sub">
+                                    <option value="">Select...</option>
+                                    <option value="N">N (Neither)</option>
+                                    <option value="M">M (Master)</option>
+                                    <option value="S">S (Sub)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Wired as Master/Sub</label>
+                                <input type="text" name="meter_1_wired_as" placeholder="Wiring config">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Register No.</label>
+                                <input type="text" name="meter_1_register" placeholder="Register no.">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Reading</label>
+                                <input type="text" name="meter_1_reading" placeholder="Reading">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Tariff</label>
+                                <input type="text" name="meter_1_tariff" placeholder="Tariff">
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="col">
+                
+                <!-- Meter Row 2 -->
+                <div class="meter-row" style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; background: #f9f9f9;">
+                    <h4 style="margin-top: 0;">Meter 2</h4>
                     <div class="field-group">
-                        <label>Master/Sub Status</label>
-                        <select name="meter_master_sub">
-                            <option value="">Select...</option>
-                            <option value="N">N (Neither)</option>
-                            <option value="M">M (Master)</option>
-                            <option value="S">S (Sub)</option>
-                        </select>
+                        <label>Status</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="meter_2_i" value="yes"> I (Installed)</label>
+                            <label><input type="checkbox" name="meter_2_r" value="yes"> R (Removed)</label>
+                            <label><input type="checkbox" name="meter_2_e" value="yes"> E (Existing)</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Meter No.</label>
+                                <input type="text" name="meter_2_number" placeholder="Meter number">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="field-group">
+                                <label>No. Dials</label>
+                                <input type="text" name="meter_2_dials" placeholder="5">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Master/Sub Status</label>
+                                <select name="meter_2_master_sub">
+                                    <option value="">Select...</option>
+                                    <option value="N">N (Neither)</option>
+                                    <option value="M">M (Master)</option>
+                                    <option value="S">S (Sub)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Wired as Master/Sub</label>
+                                <input type="text" name="meter_2_wired_as" placeholder="Wiring config">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Register No.</label>
+                                <input type="text" name="meter_2_register" placeholder="Register no.">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Reading</label>
+                                <input type="text" name="meter_2_reading" placeholder="Reading">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Tariff</label>
+                                <input type="text" name="meter_2_tariff" placeholder="Tariff">
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="field-group">
-                <label>Wired as Master/Sub</label>
-                <input type="text" name="meter_wired_as" placeholder="Enter wiring configuration">
-            </div>
-            
-            <div class="row">
-                <div class="col">
+                
+                <!-- Meter Row 3 -->
+                <div class="meter-row" style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; background: #f9f9f9;">
+                    <h4 style="margin-top: 0;">Meter 3</h4>
                     <div class="field-group">
-                        <label>Register No.</label>
-                        <input type="text" name="meter_register_no" placeholder="Register number">
+                        <label>Status</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="meter_3_i" value="yes"> I (Installed)</label>
+                            <label><input type="checkbox" name="meter_3_r" value="yes"> R (Removed)</label>
+                            <label><input type="checkbox" name="meter_3_e" value="yes"> E (Existing)</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Meter No.</label>
+                                <input type="text" name="meter_3_number" placeholder="Meter number">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="field-group">
+                                <label>No. Dials</label>
+                                <input type="text" name="meter_3_dials" placeholder="5">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Master/Sub Status</label>
+                                <select name="meter_3_master_sub">
+                                    <option value="">Select...</option>
+                                    <option value="N">N (Neither)</option>
+                                    <option value="M">M (Master)</option>
+                                    <option value="S">S (Sub)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Wired as Master/Sub</label>
+                                <input type="text" name="meter_3_wired_as" placeholder="Wiring config">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Register No.</label>
+                                <input type="text" name="meter_3_register" placeholder="Register no.">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Reading</label>
+                                <input type="text" name="meter_3_reading" placeholder="Reading">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Tariff</label>
+                                <input type="text" name="meter_3_tariff" placeholder="Tariff">
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="col">
+                
+                <!-- Meter Row 4 -->
+                <div class="meter-row" style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; background: #f9f9f9;">
+                    <h4 style="margin-top: 0;">Meter 4</h4>
                     <div class="field-group">
-                        <label>Reading</label>
-                        <input type="text" name="meter_reading" placeholder="Current reading">
+                        <label>Status</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="meter_4_i" value="yes"> I (Installed)</label>
+                            <label><input type="checkbox" name="meter_4_r" value="yes"> R (Removed)</label>
+                            <label><input type="checkbox" name="meter_4_e" value="yes"> E (Existing)</label>
+                        </div>
                     </div>
-                </div>
-                <div class="col">
-                    <div class="field-group">
-                        <label>Tariff</label>
-                        <input type="text" name="meter_tariff" placeholder="Tariff code">
+                    <div class="row">
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Meter No.</label>
+                                <input type="text" name="meter_4_number" placeholder="Meter number">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="field-group">
+                                <label>No. Dials</label>
+                                <input type="text" name="meter_4_dials" placeholder="5">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Master/Sub Status</label>
+                                <select name="meter_4_master_sub">
+                                    <option value="">Select...</option>
+                                    <option value="N">N (Neither)</option>
+                                    <option value="M">M (Master)</option>
+                                    <option value="S">S (Sub)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Wired as Master/Sub</label>
+                                <input type="text" name="meter_4_wired_as" placeholder="Wiring config">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Register No.</label>
+                                <input type="text" name="meter_4_register" placeholder="Register no.">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Reading</label>
+                                <input type="text" name="meter_4_reading" placeholder="Reading">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="field-group">
+                                <label>Tariff</label>
+                                <input type="text" name="meter_4_tariff" placeholder="Tariff">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

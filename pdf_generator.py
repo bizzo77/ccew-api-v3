@@ -220,7 +220,7 @@ def generate_ccew_pdf(form_data):
     
     # ========== INSTALLATION DETAILS SECTION ==========
     y -= 12*mm
-    section_height = 38*mm
+    section_height = 48*mm
     
     c.setFillColor(SECTION_GREEN)
     c.rect(20*mm, y - section_height, 170*mm, section_height, stroke=1, fill=1)
@@ -373,39 +373,106 @@ def generate_ccew_pdf(form_data):
     c.drawString(180*mm, y, "Tariff")
     
     y -= 5*mm
-    # 8 meter rows
+    # Meter rows - display data from up to 4 meters
     c.setFont("Helvetica", 7)
+    
+    meters_data = [
+        {
+            'i': form_data.get('meter_1_i') == 'yes',
+            'r': form_data.get('meter_1_r') == 'yes',
+            'e': form_data.get('meter_1_e') == 'yes',
+            'number': form_data.get('meter_1_number', ''),
+            'dials': form_data.get('meter_1_dials', ''),
+            'master_sub': form_data.get('meter_1_master_sub', ''),
+            'wired_as': form_data.get('meter_1_wired_as', ''),
+            'register': form_data.get('meter_1_register', ''),
+            'reading': form_data.get('meter_1_reading', ''),
+            'tariff': form_data.get('meter_1_tariff', '')
+        },
+        {
+            'i': form_data.get('meter_2_i') == 'yes',
+            'r': form_data.get('meter_2_r') == 'yes',
+            'e': form_data.get('meter_2_e') == 'yes',
+            'number': form_data.get('meter_2_number', ''),
+            'dials': form_data.get('meter_2_dials', ''),
+            'master_sub': form_data.get('meter_2_master_sub', ''),
+            'wired_as': form_data.get('meter_2_wired_as', ''),
+            'register': form_data.get('meter_2_register', ''),
+            'reading': form_data.get('meter_2_reading', ''),
+            'tariff': form_data.get('meter_2_tariff', '')
+        },
+        {
+            'i': form_data.get('meter_3_i') == 'yes',
+            'r': form_data.get('meter_3_r') == 'yes',
+            'e': form_data.get('meter_3_e') == 'yes',
+            'number': form_data.get('meter_3_number', ''),
+            'dials': form_data.get('meter_3_dials', ''),
+            'master_sub': form_data.get('meter_3_master_sub', ''),
+            'wired_as': form_data.get('meter_3_wired_as', ''),
+            'register': form_data.get('meter_3_register', ''),
+            'reading': form_data.get('meter_3_reading', ''),
+            'tariff': form_data.get('meter_3_tariff', '')
+        },
+        {
+            'i': form_data.get('meter_4_i') == 'yes',
+            'r': form_data.get('meter_4_r') == 'yes',
+            'e': form_data.get('meter_4_e') == 'yes',
+            'number': form_data.get('meter_4_number', ''),
+            'dials': form_data.get('meter_4_dials', ''),
+            'master_sub': form_data.get('meter_4_master_sub', ''),
+            'wired_as': form_data.get('meter_4_wired_as', ''),
+            'register': form_data.get('meter_4_register', ''),
+            'reading': form_data.get('meter_4_reading', ''),
+            'tariff': form_data.get('meter_4_tariff', '')
+        }
+    ]
+    
+    # Draw 8 rows (4 with data, 4 empty)
     for i in range(8):
-        draw_checkbox(c, 22*mm, y, size=2.5*mm)
-        draw_checkbox(c, 27*mm, y, size=2.5*mm)
-        draw_checkbox(c, 32*mm, y, size=2.5*mm)
-        draw_field(c, 37*mm, y, 24*mm, 4*mm, '')
-        draw_field(c, 63*mm, y, 18*mm, 4*mm, '')
-        draw_field(c, 83*mm, y, 28*mm, 4*mm, '')
-        draw_field(c, 113*mm, y, 28*mm, 4*mm, '')
-        draw_field(c, 143*mm, y, 18*mm, 4*mm, '')
-        draw_field(c, 163*mm, y, 13*mm, 4*mm, '')
-        draw_field(c, 178*mm, y, 11*mm, 4*mm, '')
+        if i < 4:
+            meter = meters_data[i]
+            draw_checkbox(c, 22*mm, y, size=2.5*mm, checked=meter['i'])
+            draw_checkbox(c, 27*mm, y, size=2.5*mm, checked=meter['r'])
+            draw_checkbox(c, 32*mm, y, size=2.5*mm, checked=meter['e'])
+            draw_field(c, 37*mm, y, 24*mm, 4*mm, meter['number'])
+            draw_field(c, 63*mm, y, 18*mm, 4*mm, meter['dials'])
+            draw_field(c, 83*mm, y, 28*mm, 4*mm, meter['master_sub'])
+            draw_field(c, 113*mm, y, 28*mm, 4*mm, meter['wired_as'])
+            draw_field(c, 143*mm, y, 18*mm, 4*mm, meter['register'])
+            draw_field(c, 163*mm, y, 13*mm, 4*mm, meter['reading'])
+            draw_field(c, 178*mm, y, 11*mm, 4*mm, meter['tariff'])
+        else:
+            # Empty rows
+            draw_checkbox(c, 22*mm, y, size=2.5*mm)
+            draw_checkbox(c, 27*mm, y, size=2.5*mm)
+            draw_checkbox(c, 32*mm, y, size=2.5*mm)
+            draw_field(c, 37*mm, y, 24*mm, 4*mm, '')
+            draw_field(c, 63*mm, y, 18*mm, 4*mm, '')
+            draw_field(c, 83*mm, y, 28*mm, 4*mm, '')
+            draw_field(c, 113*mm, y, 28*mm, 4*mm, '')
+            draw_field(c, 143*mm, y, 18*mm, 4*mm, '')
+            draw_field(c, 163*mm, y, 13*mm, 4*mm, '')
+            draw_field(c, 178*mm, y, 11*mm, 4*mm, '')
         y -= 5*mm
     
     y -= 3*mm
     c.setFont("Helvetica-Bold", 8)
     c.drawString(22*mm, y, "Estimated increase in load A/ph")
-    draw_field(c, 75*mm, y - 2*mm, 30*mm, 5*mm, '')
+    draw_field(c, 75*mm, y - 2*mm, 30*mm, 5*mm, form_data.get('load_increase', ''))
     
     y -= 7*mm
     c.drawString(22*mm, y, "* Is increased load within capacity of installation/service mains?")
     c.drawString(125*mm, y, "Yes")
-    draw_checkbox(c, 135*mm, y - 1*mm)
+    draw_checkbox(c, 135*mm, y - 1*mm, checked=form_data.get('load_within_capacity') == 'Yes')
     c.drawString(145*mm, y, "No")
-    draw_checkbox(c, 155*mm, y - 1*mm)
+    draw_checkbox(c, 155*mm, y - 1*mm, checked=form_data.get('load_within_capacity') == 'No')
     
     y -= 6*mm
     c.drawString(22*mm, y, "* Is work connected to supply? (pending DSNP Inspection)")
     c.drawString(125*mm, y, "Yes")
-    draw_checkbox(c, 135*mm, y - 1*mm)
+    draw_checkbox(c, 135*mm, y - 1*mm, checked=form_data.get('work_connected_supply') == 'Yes')
     c.drawString(145*mm, y, "No")
-    draw_checkbox(c, 155*mm, y - 1*mm)
+    draw_checkbox(c, 155*mm, y - 1*mm, checked=form_data.get('work_connected_supply') == 'No')
     
     # ========== INSTALLERS LICENSE DETAILS SECTION ==========
     y -= 10*mm

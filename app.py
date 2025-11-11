@@ -398,6 +398,56 @@ def submit_ccew():
             'polarity_test': request.form.get('polarity_test', ''),
             'rcd_test': request.form.get('rcd_test', ''),
             
+            # Meters data (4 meters)
+            'meter_1_i': request.form.get('meter_1_i', ''),
+            'meter_1_r': request.form.get('meter_1_r', ''),
+            'meter_1_e': request.form.get('meter_1_e', ''),
+            'meter_1_number': request.form.get('meter_1_number', ''),
+            'meter_1_dials': request.form.get('meter_1_dials', ''),
+            'meter_1_master_sub': request.form.get('meter_1_master_sub', ''),
+            'meter_1_wired_as': request.form.get('meter_1_wired_as', ''),
+            'meter_1_register': request.form.get('meter_1_register', ''),
+            'meter_1_reading': request.form.get('meter_1_reading', ''),
+            'meter_1_tariff': request.form.get('meter_1_tariff', ''),
+            
+            'meter_2_i': request.form.get('meter_2_i', ''),
+            'meter_2_r': request.form.get('meter_2_r', ''),
+            'meter_2_e': request.form.get('meter_2_e', ''),
+            'meter_2_number': request.form.get('meter_2_number', ''),
+            'meter_2_dials': request.form.get('meter_2_dials', ''),
+            'meter_2_master_sub': request.form.get('meter_2_master_sub', ''),
+            'meter_2_wired_as': request.form.get('meter_2_wired_as', ''),
+            'meter_2_register': request.form.get('meter_2_register', ''),
+            'meter_2_reading': request.form.get('meter_2_reading', ''),
+            'meter_2_tariff': request.form.get('meter_2_tariff', ''),
+            
+            'meter_3_i': request.form.get('meter_3_i', ''),
+            'meter_3_r': request.form.get('meter_3_r', ''),
+            'meter_3_e': request.form.get('meter_3_e', ''),
+            'meter_3_number': request.form.get('meter_3_number', ''),
+            'meter_3_dials': request.form.get('meter_3_dials', ''),
+            'meter_3_master_sub': request.form.get('meter_3_master_sub', ''),
+            'meter_3_wired_as': request.form.get('meter_3_wired_as', ''),
+            'meter_3_register': request.form.get('meter_3_register', ''),
+            'meter_3_reading': request.form.get('meter_3_reading', ''),
+            'meter_3_tariff': request.form.get('meter_3_tariff', ''),
+            
+            'meter_4_i': request.form.get('meter_4_i', ''),
+            'meter_4_r': request.form.get('meter_4_r', ''),
+            'meter_4_e': request.form.get('meter_4_e', ''),
+            'meter_4_number': request.form.get('meter_4_number', ''),
+            'meter_4_dials': request.form.get('meter_4_dials', ''),
+            'meter_4_master_sub': request.form.get('meter_4_master_sub', ''),
+            'meter_4_wired_as': request.form.get('meter_4_wired_as', ''),
+            'meter_4_register': request.form.get('meter_4_register', ''),
+            'meter_4_reading': request.form.get('meter_4_reading', ''),
+            'meter_4_tariff': request.form.get('meter_4_tariff', ''),
+            
+            # Load capacity fields
+            'load_increase': request.form.get('load_increase', ''),
+            'load_within_capacity': request.form.get('load_within_capacity', ''),
+            'work_connected_supply': request.form.get('work_connected_supply', ''),
+            
             # Installer Contact
             'installer_mobile_phone': request.form.get('installer_mobile_phone', ''),
             
