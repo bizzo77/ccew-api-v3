@@ -164,7 +164,7 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 134*mm, y, 55*mm, 5*mm, form_data.get('aemo_provider_id', ''))
     
     # Now draw green background covering entire section
-    section_end_y = y - 5*mm  # Add padding at bottom
+    section_end_y = y - 2*mm  # Add padding at bottom
     section_height = section_start_y - section_end_y
     c.setFillColor(SECTION_GREEN)
     c.setStrokeColor(black)
@@ -265,7 +265,7 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 154*mm, y, 35*mm, 5*mm, form_data.get('customer_mobile_phone', ''))
     
     # Draw green background for Customer Details
-    cust_section_end_y = y - 5*mm
+    cust_section_end_y = y - 2*mm
     cust_section_height = cust_section_start_y - cust_section_end_y
     c.setFillColor(SECTION_GREEN)
     c.rect(20*mm, cust_section_end_y, 170*mm, cust_section_height, stroke=1, fill=1)
@@ -369,19 +369,19 @@ def generate_ccew_pdf(form_data):
     c.drawString(80*mm, y + 0.5*mm, "Over 100 amps")
     draw_checkbox(c, 125*mm, y, checked=form_data.get('special_hazardous_area') == 'yes')
     c.drawString(130*mm, y + 0.5*mm, "Hazardous Area")
-    draw_checkbox(c, 170*mm, y, checked=form_data.get('special_off_grid') == 'yes')
-    c.drawString(175*mm, y + 0.5*mm, "Off Grid Installation")
+    draw_checkbox(c, 155*mm, y, checked=form_data.get('special_off_grid') == 'yes')
+    c.drawString(160*mm, y + 0.5*mm, "Off Grid Install")
     
     y -= 5*mm
     draw_checkbox(c, 75*mm, y, checked=form_data.get('special_high_voltage') == 'yes')
     c.drawString(80*mm, y + 0.5*mm, "High Voltage")
     draw_checkbox(c, 125*mm, y, checked=form_data.get('special_unmetered') == 'yes')
     c.drawString(130*mm, y + 0.5*mm, "Unmetered Supply")
-    draw_checkbox(c, 170*mm, y, checked=form_data.get('special_secondary_power') == 'yes')
-    c.drawString(175*mm, y + 0.5*mm, "Secondary Power Supply")
+    draw_checkbox(c, 155*mm, y, checked=form_data.get('special_secondary_power') == 'yes')
+    c.drawString(160*mm, y + 0.5*mm, "Secondary M")
     
     # Draw green background for Installation Details
-    inst_section_end_y = y - 5*mm
+    inst_section_end_y = y - 2*mm
     inst_section_height = inst_section_start_y - inst_section_end_y
     c.setFillColor(SECTION_GREEN)
     c.rect(20*mm, inst_section_end_y, 170*mm, inst_section_height, stroke=1, fill=1)
@@ -519,10 +519,10 @@ def generate_ccew_pdf(form_data):
     c.setFont("Helvetica", 8)
     c.drawString(22*mm, equip_section_start_y - 10*mm, "Select equipment installed and estimate increase of work affected by the work carried out")
     c.setFont("Helvetica-Bold", 8)
-    c.drawString(22*mm, equip_section_start_y - 17*mm, "EQUIPMENT")
-    c.drawString(75*mm, equip_section_start_y - 17*mm, "RATING")
-    c.drawString(110*mm, equip_section_start_y - 17*mm, "NUMBER INSTALLED")
-    c.drawString(150*mm, equip_section_start_y - 17*mm, "PARTICULARS")
+    c.drawString(22*mm, equip_section_start_y - 19*mm, "EQUIPMENT")
+    c.drawString(75*mm, equip_section_start_y - 19*mm, "RATING")
+    c.drawString(110*mm, equip_section_start_y - 19*mm, "NUMBER INSTALLED")
+    c.drawString(150*mm, equip_section_start_y - 19*mm, "PARTICULARS")
     
     # Redraw equipment rows on top of green background
     y_row = equip_section_start_y - 22*mm
@@ -665,7 +665,7 @@ def generate_ccew_pdf(form_data):
     draw_checkbox(c, 155*mm, y - 1*mm, checked=form_data.get('work_connected_supply') == 'No')
     
     # Draw green background for Meters
-    meters_section_end_y = y - 5*mm
+    meters_section_end_y = y - 2*mm
     meters_section_height = meters_section_start_y - meters_section_end_y
     c.setFillColor(SECTION_GREEN)
     c.setStrokeColor(black)
@@ -800,7 +800,7 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 154*mm, y, 35*mm, 5*mm, format_date_australian(form_data.get('installer_license_expiry', '')))
     
     # Draw green background for Installers License
-    installers_section_end_y = y - 5*mm
+    installers_section_end_y = y - 2*mm
     installers_section_height = installers_section_start_y - installers_section_end_y
     c.setFillColor(SECTION_GREEN)
     c.setStrokeColor(black)
@@ -913,7 +913,7 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 70*mm, y - 2*mm, 40*mm, 5*mm, format_date_australian(form_data.get('test_date', '')))
     
     # Draw green background for Test Report
-    test_section_end_y = y - 7*mm
+    test_section_end_y = y - 2*mm
     test_section_height = test_section_start_y - test_section_end_y
     c.setFillColor(SECTION_GREEN)
     c.setStrokeColor(black)
@@ -951,6 +951,9 @@ def generate_ccew_pdf(form_data):
     c.drawString(26*mm, y_text, "relevant Acts, Regulations, Codes and Standards:")
     y_text -= 7*mm
     c.drawString(22*mm, y_text, "3.  *The test was completed on")
+    
+    # Redraw test date field on top of green background
+    draw_field(c, 70*mm, y_text - 2*mm, 40*mm, 5*mm, format_date_australian(form_data.get('test_date', '')))
     
     # Redraw all checkboxes on top of green background
     y_check = test_section_start_y - 15*mm
@@ -1039,7 +1042,7 @@ def generate_ccew_pdf(form_data):
     c.drawString(21*mm, y, "was completed by the nominated electrician")
     
     # Draw green background for Testers License
-    testers_section_end_y = y - 4*mm
+    testers_section_end_y = y - 2*mm
     testers_section_height = testers_section_start_y - testers_section_end_y
     c.setFillColor(SECTION_GREEN)
     c.setStrokeColor(black)
@@ -1132,7 +1135,7 @@ def generate_ccew_pdf(form_data):
     draw_field(c, 21*mm, y - 8*mm, 80*mm, 20*mm, form_data.get('signature', ''))
     
     # Draw green background for Submit CCEW
-    submit_section_end_y = y - 28*mm
+    submit_section_end_y = y - 2*mm
     submit_section_height = submit_section_start_y - submit_section_end_y
     c.setFillColor(SECTION_GREEN)
     c.setStrokeColor(black)
@@ -1152,13 +1155,13 @@ def generate_ccew_pdf(form_data):
     y_text -= 12*mm
     c.drawString(22*mm, y_text, "Please enter the meter providers email to send a copy of this CCEW directly to that provider")
     
-    y_text -= 16*mm
+    y_text -= 18*mm
     c.drawString(21*mm, y_text, "Signature:")
     
     # Redraw all field boxes on top of green background
     draw_field(c, 21*mm, submit_section_start_y - 16*mm, 168*mm, 5*mm, form_data.get('energy_provider', ''))
     draw_field(c, 21*mm, submit_section_start_y - 28*mm, 168*mm, 5*mm, '')
-    draw_field(c, 21*mm, submit_section_start_y - 46*mm, 80*mm, 20*mm, form_data.get('signature', ''))
+    draw_field(c, 21*mm, submit_section_start_y - 50*mm, 80*mm, 20*mm, form_data.get('signature', ''))
     
     # Finalize
     c.save()
