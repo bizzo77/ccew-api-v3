@@ -365,41 +365,42 @@ def generate_ccew_pdf(form_data):
     ]
     
     c.setFont("Helvetica", 8)
-    c.setFillColor(HEADER_GREEN)
     
     for item_name, check_field, rating_field, number_field, particulars_field in equipment_items:
-        # Draw row background
-        c.rect(table_x, y - row_height, table_width, row_height, stroke=1, fill=1)
-        
-        # Checkbox
+        # Draw checkbox column (white background)
+        c.setStrokeColor(black)
         c.setFillColor(white)
+        c.rect(table_x, y - row_height, col_widths[0], row_height, stroke=1, fill=1)
+        
+        # Draw checkbox
         draw_checkbox(c, table_x + 1*mm, y - row_height + 2*mm, checked=form_data.get(check_field) == 'yes')
         
-        # Equipment name
+        # Draw equipment name column (green background)
+        c.setFillColor(HEADER_GREEN)
+        c.rect(table_x + col_widths[0], y - row_height, col_widths[1], row_height, stroke=1, fill=1)
         c.setFillColor(white)
         c.setFont("Helvetica-Bold", 8)
         c.drawString(table_x + col_widths[0] + 2*mm, y - row_height + 2*mm, item_name)
         
-        # Draw white boxes for data fields
+        # Draw rating column (white background)
         c.setFillColor(white)
         c.setStrokeColor(black)
-        # Rating
         c.rect(table_x + col_widths[0] + col_widths[1], y - row_height, col_widths[2], row_height, stroke=1, fill=1)
         c.setFillColor(black)
         c.setFont("Helvetica", 8)
-        c.drawString(table_x + col_widths[0] + col_widths[1] + 2*mm, y - row_height + 2*mm, form_data.get(rating_field, ''))
+        c.drawString(table_x + col_widths[0] + col_widths[1] + 2*mm, y - row_height + 2*mm, str(form_data.get(rating_field, '')))
         
-        # Number
+        # Draw number column (white background)
         c.setFillColor(white)
         c.rect(table_x + col_widths[0] + col_widths[1] + col_widths[2], y - row_height, col_widths[3], row_height, stroke=1, fill=1)
         c.setFillColor(black)
-        c.drawString(table_x + col_widths[0] + col_widths[1] + col_widths[2] + 2*mm, y - row_height + 2*mm, form_data.get(number_field, ''))
+        c.drawString(table_x + col_widths[0] + col_widths[1] + col_widths[2] + 2*mm, y - row_height + 2*mm, str(form_data.get(number_field, '')))
         
-        # Particulars
+        # Draw particulars column (white background)
         c.setFillColor(white)
         c.rect(table_x + col_widths[0] + col_widths[1] + col_widths[2] + col_widths[3], y - row_height, col_widths[4], row_height, stroke=1, fill=1)
         c.setFillColor(black)
-        c.drawString(table_x + col_widths[0] + col_widths[1] + col_widths[2] + col_widths[3] + 2*mm, y - row_height + 2*mm, form_data.get(particulars_field, ''))
+        c.drawString(table_x + col_widths[0] + col_widths[1] + col_widths[2] + col_widths[3] + 2*mm, y - row_height + 2*mm, str(form_data.get(particulars_field, '')))
         
         y -= row_height
     
