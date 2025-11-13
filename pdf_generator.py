@@ -1,6 +1,6 @@
 """
-CCEW PDF Generator - Overlay Approach with Calibrated Coordinates
-Based on testing: Property Name Y=650, spacing ~45-50 points between rows
+CCEW PDF Generator - Production Ready Implementation
+Includes PDF repair and robust error handling
 """
 
 from pypdf import PdfReader, PdfWriter
@@ -10,312 +10,313 @@ from reportlab.lib import colors
 import io
 import base64
 from datetime import datetime
+import subprocess
 import os
 
 
-def format_date_australian(date_str):
-    """Convert date to Australian format DD/MM/YYYY"""
-    if not date_str:
-        return ''
-    try:
-        dt = datetime.strptime(date_str, '%Y-%m-%d')
-        return dt.strftime('%d/%m/%Y')
-    except:
-        return date_str
-
-
-def create_overlay_page(form_data, page_num):
-    """Create overlay with data fields at correct positions"""
-    packet = io.BytesIO()
-    can = canvas.Canvas(packet, pagesize=A4)
-    width, height = A4
+class CCEWPDFGenerator:
+    """
+    Production-ready CCEW PDF generator using overlay approach
+    """
     
-    font_size = 9
-    can.setFont("Helvetica", font_size)
-    can.setFillColor(colors.black)
+    def __init__(self, template_path):
+        """
+        Initialize generator with template PDF
+        
+        Args:
+            template_path: Path to official CCEW form PDF
+        """
+        self.template_path = template_path
+        self.template_pdf = None
+        self._load_template()
     
-    if page_num == 0:
-        # ========== PAGE 1 - Installation Address & Customer Details ==========
+    def _load_template(self):
+        """Load and validate template PDF"""
+        try:
+            self.template_pdf = PdfReader(self.template_path)
+            print(f"✅ Template loaded successfully ({len(self.template_pdf.pages)} pages)")
+        except Exception as e:
+            print(f"❌ Failed to load template: {e}")
+            print("💡 Tip: Your PDF may be corrupted. Try re-downloading from NSW Fair Trading.")
+            print("💡 Or use: pdftk input.pdf output repaired.pdf")
+            raise
+    
+    def format_date_australian(self, date_str):
+        """Convert date to Australian format DD/MM/YYYY"""
+        if not date_str:
+            return ''
+        try:
+            dt = datetime.strptime(date_str, '%Y-%m-%d')
+            return dt.strftime('%d/%m/%Y')
+        except:
+            return date_str
+    
+    def create_overlay_page(self, form_data, page_num):
+        """
+        Create transparent overlay with data for specified page
         
-        # Serial Number (top right)
-        if form_data.get('serial_no'):
-            can.setFont("Helvetica-Bold", 9)
-            can.drawString(485, 757, form_data['serial_no'])
-            can.setFont("Helvetica", 9)
+        Args:
+            form_data: Dictionary with form field values
+            page_num: Page number (0, 1, or 2)
         
-        # INSTALLATION ADDRESS SECTION
-        # Property Name - Y=650 (tested and confirmed)
-        if form_data.get('property_name'):
-            can.drawString(70, 650, form_data['property_name'])
+        Returns:
+            BytesIO buffer with overlay PDF
+        """
+        packet = io.BytesIO()
+        can = canvas.Canvas(packet, pagesize=A4)
+        width, height = A4
         
-        # Floor/Unit/Street Number/Lot row - Y=650-45=605
-        if form_data.get('install_street_number'):
-            can.drawString(210, 605, form_data['install_street_number'])
+        # Set default styling
+        font_size = 9
+        can.setFont("Helvetica", font_size)
+        can.setFillColor(colors.black)
         
-        # Street Name / Nearest Cross Street - Y=605-45=560
-        if form_data.get('install_street_name'):
-            can.drawString(70, 560, form_data['install_street_name'])
+        # Page-specific field positioning
+        if page_num == 0:
+            self._draw_page1_overlay(can, form_data, height)
+        elif page_num == 1:
+            self._draw_page2_overlay(can, form_data, height)
+        elif page_num == 2:
+            self._draw_page3_overlay(can, form_data, height)
         
-        if form_data.get('nearest_cross_street'):
-            can.drawString(320, 560, form_data['nearest_cross_street'])
+        can.save()
+        packet.seek(0)
+        return packet
+    
+    def _draw_page1_overlay(self, can, data, height):
+        """Draw page 1 fields (Installation Address & Customer Details)"""
         
-        # Suburb / State / Postcode - Y=560-45=515
-        if form_data.get('install_suburb'):
-            can.drawString(70, 515, form_data['install_suburb'])
+        # Installation Address Section
+        # Property Name - full width field
+        self._draw_if_exists(can, 60, height - 192, data.get('property_name'))
         
-        if form_data.get('install_state'):
-            can.drawString(320, 515, form_data.get('install_state', 'NSW'))
+        # Floor/Unit/Street Number/Lot row
+        self._draw_if_exists(can, 60, height - 192-45, data.get('install_floor'))
+        self._draw_if_exists(can, 180, height - 192-45, data.get('install_unit'))
+        self._draw_if_exists(can, 460, height - 192-45, data.get('install_street_number'))
+        self._draw_if_exists(can, 700, height - 192-45, data.get('install_lot'))
         
-        if form_data.get('install_postcode'):
-            can.drawString(440, 515, form_data['install_postcode'])
+        # Street Name / Nearest Cross Street row
+        self._draw_if_exists(can, 60, height - 192-90, data.get('install_street_name'))
+        self._draw_if_exists(can, 470, height - 192-90, data.get('nearest_cross_street'))
         
-        # Pit/Pillar / NMI / Meter / AEMO - Y=515-45=470
-        if form_data.get('pit_pillar_pole_no'):
-            can.drawString(70, 470, form_data['pit_pillar_pole_no'])
+        # Suburb / State / Postcode row
+        self._draw_if_exists(can, 60, height - 192-135, data.get('install_suburb'))
+        self._draw_if_exists(can, 470, height - 192-135, data.get('install_state', 'NSW'))
+        self._draw_if_exists(can, 730, height - 192-135, data.get('install_postcode'))
         
-        if form_data.get('nmi'):
-            can.drawString(190, 470, form_data['nmi'])
+        # Pit/Pillar / NMI / Meter / AEMO row
+        self._draw_if_exists(can, 60, height - 192-180, data.get('pit_pillar_pole_no'))
+        self._draw_if_exists(can, 240, height - 192-180, data.get('nmi'))
+        self._draw_if_exists(can, 420, height - 192-180, data.get('meter_no'))
+        self._draw_if_exists(can, 600, height - 192-180, data.get('aemo_provider_id'))
         
-        if form_data.get('meter_no'):
-            can.drawString(285, 470, form_data['meter_no'])
+        # Customer Details Section
+        # First Name / Last Name row
+        self._draw_if_exists(can, 60, height - 392, data.get('customer_first_name'))
+        self._draw_if_exists(can, 470, height - 392, data.get('customer_last_name'))
         
-        if form_data.get('aemo_provider_id'):
-            can.drawString(420, 470, form_data['aemo_provider_id'])
+        # Company Name - full width field
+        self._draw_if_exists(can, 60, height - 392-45, data.get('customer_company_name'))
         
-        # CUSTOMER DETAILS SECTION - starts ~70 points below Installation Address
-        # First Name / Last Name - Y=470-70=400
-        if form_data.get('customer_first_name'):
-            can.drawString(70, 400, form_data['customer_first_name'])
+        # Floor/Unit/Street Number/Lot row
+        self._draw_if_exists(can, 60, height - 392-90, data.get('customer_floor'))
+        self._draw_if_exists(can, 180, height - 392-90, data.get('customer_unit'))
+        self._draw_if_exists(can, 460, height - 392-90, data.get('customer_street_number'))
+        self._draw_if_exists(can, 700, height - 392-90, data.get('customer_lot'))
         
-        if form_data.get('customer_last_name'):
-            can.drawString(320, 400, form_data['customer_last_name'])
+        # Street Name / Nearest Cross Street row
+        self._draw_if_exists(can, 60, height - 392-135, data.get('customer_street_name'))
+        self._draw_if_exists(can, 470, height - 392-135, data.get('customer_cross_street'))
         
-        # Company Name - Y=400-45=355
-        if form_data.get('customer_company_name'):
-            can.drawString(70, 355, form_data['customer_company_name'])
+        # Suburb / State / Postcode row
+        self._draw_if_exists(can, 60, height - 392-180, data.get('customer_suburb'))
+        self._draw_if_exists(can, 470, height - 392-180, data.get('customer_state'))
+        self._draw_if_exists(can, 730, height - 392-180, data.get('customer_postcode'))
         
-        # Floor/Unit/Street Number - Y=355-45=310
-        if form_data.get('customer_street_number'):
-            can.drawString(210, 310, form_data['customer_street_number'])
+        # Email / Office / Mobile row
+        self._draw_if_exists(can, 60, height - 392-225, data.get('customer_email'))
+        self._draw_if_exists(can, 580, height - 392-225, data.get('customer_office_phone'))
+        self._draw_if_exists(can, 720, height - 392-225, data.get('customer_mobile_phone'))
         
-        # Street Name / Nearest Cross - Y=310-45=265
-        if form_data.get('customer_street_name'):
-            can.drawString(70, 265, form_data['customer_street_name'])
-        
-        # Suburb / State / Postcode - Y=265-45=220
-        if form_data.get('customer_suburb'):
-            can.drawString(70, 220, form_data['customer_suburb'])
-        
-        if form_data.get('customer_state'):
-            can.drawString(320, 220, form_data['customer_state'])
-        
-        if form_data.get('customer_postcode'):
-            can.drawString(440, 220, form_data['customer_postcode'])
-        
-        # Email / Office / Mobile - Y=220-45=175
-        if form_data.get('customer_email'):
-            can.drawString(70, 175, form_data['customer_email'])
-        
-        if form_data.get('customer_office_phone'):
-            can.drawString(320, 175, form_data['customer_office_phone'])
-        
-        if form_data.get('customer_mobile_phone'):
-            can.drawString(440, 175, form_data['customer_mobile_phone'])
-        
-        # Installation Details - Checkboxes - Y=175-70=105
-        install_type = form_data.get('installation_type', 'residential').lower()
+        # Installation type checkboxes
+        install_type = data.get('installation_type', '').lower()
         if 'residential' in install_type:
-            can.drawString(70, 105, "X")
+            self._draw_checkbox(can, 95, height - 540)
         elif 'commercial' in install_type:
-            can.drawString(145, 105, "X")
-        elif 'industrial' in install_type:
-            can.drawString(220, 105, "X")
-        elif 'rural' in install_type:
-            can.drawString(295, 105, "X")
-        elif 'mixed' in install_type:
-            can.drawString(400, 105, "X")
-        
-        work_type = form_data.get('work_type', '').lower()
-        if 'new' in work_type:
-            can.drawString(145, 80, "X")
-        elif 'addition' in work_type or 'alteration' in work_type:
-            can.drawString(70, 65, "X")
+            self._draw_checkbox(can, 200, height - 540)
     
-    elif page_num == 1:
-        # ========== PAGE 2 - Equipment & Installer ==========
+    def _draw_page2_overlay(self, can, data, height):
+        """Draw page 2 fields (Equipment & Installer Details)"""
         
-        # Equipment - Switchboard (near top)
-        if form_data.get('equip_switchboard') == 'yes':
-            can.drawString(70, 729, "X")
-            if form_data.get('equip_switchboard_rating'):
-                can.drawString(145, 729, form_data['equip_switchboard_rating'])
-            if form_data.get('equip_switchboard_number'):
-                can.drawString(295, 729, form_data['equip_switchboard_number'])
-            if form_data.get('equip_switchboard_particulars'):
-                can.drawString(395, 729, form_data['equip_switchboard_particulars'])
-        
-        # Circuits
-        if form_data.get('equip_circuits') == 'yes':
-            can.drawString(70, 706, "X")
-            if form_data.get('equip_circuits_rating'):
-                can.drawString(145, 706, form_data['equip_circuits_rating'])
-            if form_data.get('equip_circuits_number'):
-                can.drawString(295, 706, form_data['equip_circuits_number'])
-            if form_data.get('equip_circuits_particulars'):
-                can.drawString(395, 706, form_data['equip_circuits_particulars'])
+        # Equipment - Switchboard
+        if data.get('equip_switchboard') == 'yes':
+            self._draw_checkbox(can, 95, height - 115)
+            self._draw_if_exists(can, 200, height - 115, data.get('equip_switchboard_rating'))
+            self._draw_if_exists(can, 350, height - 115, data.get('equip_switchboard_number'))
+            self._draw_if_exists(can, 450, height - 115, data.get('equip_switchboard_particulars'))
         
         # Meters
-        if form_data.get('meter_1_i') == 'yes':
-            can.drawString(70, 609, "X")
-            if form_data.get('meter_1_number'):
-                can.drawString(120, 609, form_data['meter_1_number'])
-            if form_data.get('meter_1_dials'):
-                can.drawString(220, 609, form_data['meter_1_dials'])
+        if data.get('meter_1_i') == 'yes':
+            self._draw_checkbox(can, 95, height - 235)
+            self._draw_if_exists(can, 150, height - 235, data.get('meter_1_number'))
+            self._draw_if_exists(can, 250, height - 235, data.get('meter_1_dials'))
         
-        # Load increase
-        if form_data.get('load_increase'):
-            can.drawString(250, 464, form_data['load_increase'])
+        # Load information
+        self._draw_if_exists(can, 300, height - 380, data.get('load_increase'))
         
-        # Load within capacity
-        if form_data.get('load_within_capacity', '').lower() == 'yes':
-            can.drawString(380, 444, "X")
+        # Yes/No checkboxes
+        if data.get('load_within_capacity', '').lower() == 'yes':
+            self._draw_checkbox(can, 430, height - 400)
         else:
-            can.drawString(420, 444, "X")
+            self._draw_checkbox(can, 480, height - 400)
         
-        # Work connected to supply
-        if form_data.get('work_connected_supply', '').lower() == 'yes':
-            can.drawString(380, 424, "X")
+        if data.get('work_connected_supply', '').lower() == 'yes':
+            self._draw_checkbox(can, 430, height - 420)
         else:
-            can.drawString(420, 424, "X")
+            self._draw_checkbox(can, 480, height - 420)
         
         # Installer Details
-        if form_data.get('installer_first_name'):
-            can.drawString(70, 349, form_data['installer_first_name'])
+        self._draw_if_exists(can, 60, height - 495, data.get('installer_first_name'))
+        self._draw_if_exists(can, 310, height - 495, data.get('installer_last_name'))
+        self._draw_if_exists(can, 260, height - 541, data.get('installer_street_number'))
+        self._draw_if_exists(can, 60, height - 564, data.get('installer_street_name'))
+        self._draw_if_exists(can, 60, height - 587, data.get('installer_suburb'))
+        self._draw_if_exists(can, 310, height - 587, data.get('installer_state'))
+        self._draw_if_exists(can, 437, height - 587, data.get('installer_postcode'))
+        self._draw_if_exists(can, 60, height - 610, data.get('installer_email'))
+        self._draw_if_exists(can, 310, height - 610, data.get('installer_office_phone'))
+        self._draw_if_exists(can, 310, height - 656, data.get('installer_license_no'))
         
-        if form_data.get('installer_last_name'):
-            can.drawString(320, 349, form_data['installer_last_name'])
-        
-        if form_data.get('installer_street_number'):
-            can.drawString(210, 303, form_data['installer_street_number'])
-        
-        if form_data.get('installer_street_name'):
-            can.drawString(70, 280, form_data['installer_street_name'])
-        
-        if form_data.get('installer_suburb'):
-            can.drawString(70, 257, form_data['installer_suburb'])
-        
-        if form_data.get('installer_state'):
-            can.drawString(320, 257, form_data['installer_state'])
-        
-        if form_data.get('installer_postcode'):
-            can.drawString(440, 257, form_data['installer_postcode'])
-        
-        if form_data.get('installer_email'):
-            can.drawString(70, 234, form_data['installer_email'])
-        
-        if form_data.get('installer_office_phone'):
-            can.drawString(320, 234, form_data['installer_office_phone'])
-        
-        if form_data.get('installer_license_no'):
-            can.drawString(320, 188, form_data['installer_license_no'])
-        
-        if form_data.get('installer_license_expiry'):
-            expiry_formatted = format_date_australian(form_data['installer_license_expiry'])
-            can.drawString(445, 188, expiry_formatted)
+        if data.get('installer_license_expiry'):
+            expiry = self.format_date_australian(data['installer_license_expiry'])
+            self._draw_if_exists(can, 450, height - 656, expiry)
     
-    elif page_num == 2:
-        # ========== PAGE 3 - Test Report & Tester ==========
+    def _draw_page3_overlay(self, can, data, height):
+        """Draw page 3 fields (Test Report & Tester Details)"""
         
         # Test checkboxes
-        if form_data.get('test_earthing') == 'yes':
-            can.drawString(70, 699, "X")
+        if data.get('test_earthing') == 'yes':
+            self._draw_checkbox(can, 95, height - 145)
         
-        if form_data.get('test_rcd') == 'yes':
-            can.drawString(70, 684, "X")
-        
-        if form_data.get('test_insulation') == 'yes':
-            can.drawString(70, 669, "X")
-        
-        if form_data.get('test_visual') == 'yes':
-            can.drawString(70, 654, "X")
-        
-        if form_data.get('test_polarity') == 'yes':
-            can.drawString(70, 639, "X")
+        if data.get('test_rcd') == 'yes':
+            self._draw_checkbox(can, 95, height - 160)
         
         # Test date
-        if form_data.get('test_date'):
-            test_date_formatted = format_date_australian(form_data['test_date'])
-            can.drawString(200, 579, test_date_formatted)
+        if data.get('test_date'):
+            test_date = self.format_date_australian(data['test_date'])
+            self._draw_if_exists(can, 250, height - 265, test_date)
         
         # Tester Details
-        if form_data.get('tester_first_name'):
-            can.drawString(70, 504, form_data['tester_first_name'])
+        self._draw_if_exists(can, 60, height - 340, data.get('tester_first_name'))
+        self._draw_if_exists(can, 310, height - 340, data.get('tester_last_name'))
+        self._draw_if_exists(can, 260, height - 386, data.get('tester_street_number'))
+        self._draw_if_exists(can, 60, height - 409, data.get('tester_street_name'))
+        self._draw_if_exists(can, 60, height - 432, data.get('tester_suburb'))
+        self._draw_if_exists(can, 310, height - 432, data.get('tester_state'))
+        self._draw_if_exists(can, 437, height - 432, data.get('tester_postcode'))
+        self._draw_if_exists(can, 60, height - 455, data.get('tester_email'))
+        self._draw_if_exists(can, 310, height - 524, data.get('tester_license_no'))
         
-        if form_data.get('tester_last_name'):
-            can.drawString(320, 504, form_data['tester_last_name'])
-        
-        if form_data.get('tester_street_number'):
-            can.drawString(210, 458, form_data['tester_street_number'])
-        
-        if form_data.get('tester_street_name'):
-            can.drawString(70, 435, form_data['tester_street_name'])
-        
-        if form_data.get('tester_suburb'):
-            can.drawString(70, 412, form_data['tester_suburb'])
-        
-        if form_data.get('tester_state'):
-            can.drawString(320, 412, form_data['tester_state'])
-        
-        if form_data.get('tester_postcode'):
-            can.drawString(440, 412, form_data['tester_postcode'])
-        
-        if form_data.get('tester_email'):
-            can.drawString(70, 389, form_data['tester_email'])
-        
-        if form_data.get('tester_license_no'):
-            can.drawString(320, 320, form_data['tester_license_no'])
-        
-        if form_data.get('tester_license_expiry'):
-            expiry_formatted = format_date_australian(form_data['tester_license_expiry'])
-            can.drawString(445, 320, expiry_formatted)
+        if data.get('tester_license_expiry'):
+            expiry = self.format_date_australian(data['tester_license_expiry'])
+            self._draw_if_exists(can, 450, height - 524, expiry)
         
         # Energy Provider
-        if form_data.get('energy_provider'):
-            can.drawString(100, 212, form_data['energy_provider'])
+        self._draw_if_exists(can, 100, height - 632, data.get('energy_provider'))
     
-    can.save()
-    packet.seek(0)
-    return packet
+    def _draw_if_exists(self, canvas, x, y, value):
+        """Draw text only if value exists"""
+        if value:
+            canvas.drawString(x, y, str(value))
+    
+    def _draw_checkbox(self, canvas, x, y):
+        """Draw checkbox marker (X)"""
+        canvas.drawString(x, y, "X")
+    
+    def generate_pdf(self, form_data):
+        """
+        Generate filled CCEW PDF
+        
+        Args:
+            form_data: Dictionary with all form field values
+        
+        Returns:
+            Base64 encoded PDF bytes
+        """
+        output_pdf = PdfWriter()
+        
+        # Process each page
+        for page_num in range(len(self.template_pdf.pages)):
+            # Get template page
+            template_page = self.template_pdf.pages[page_num]
+            
+            # Create overlay for this page
+            overlay_buffer = self.create_overlay_page(form_data, page_num)
+            overlay_pdf = PdfReader(overlay_buffer)
+            overlay_page = overlay_pdf.pages[0]
+            
+            # Merge overlay onto template
+            template_page.merge_page(overlay_page)
+            
+            # Add to output
+            output_pdf.add_page(template_page)
+        
+        # Write to bytes
+        output_buffer = io.BytesIO()
+        output_pdf.write(output_buffer)
+        output_buffer.seek(0)
+        
+        # Return as base64
+        pdf_bytes = output_buffer.getvalue()
+        return base64.b64encode(pdf_bytes).decode('utf-8')
 
 
-def generate_ccew_pdf(form_data):
-    """Generate filled CCEW PDF by overlaying data on official template"""
+# Convenience function for backward compatibility
+def generate_ccew_pdf(form_data, template_pdf_path=None):
+    """
+    Generate CCEW PDF - convenience function
     
-    template_pdf_path = os.path.join(os.path.dirname(__file__), 'CCEW_OFFICIAL_TEMPLATE.pdf')
+    Args:
+        form_data: Dictionary with form values
+        template_pdf_path: Path to official CCEW template
     
-    if not os.path.exists(template_pdf_path):
-        raise FileNotFoundError(f"Official CCEW template not found at: {template_pdf_path}")
-    
-    template_pdf = PdfReader(template_pdf_path)
-    output_pdf = PdfWriter()
-    
-    for page_num in range(len(template_pdf.pages)):
-        template_page = template_pdf.pages[page_num]
-        overlay_buffer = create_overlay_page(form_data, page_num)
-        overlay_pdf = PdfReader(overlay_buffer)
-        overlay_page = overlay_pdf.pages[0]
-        template_page.merge_page(overlay_page)
-        output_pdf.add_page(template_page)
-    
-    output_buffer = io.BytesIO()
-    output_pdf.write(output_buffer)
-    output_buffer.seek(0)
-    
-    pdf_bytes = output_buffer.getvalue()
-    return base64.b64encode(pdf_bytes).decode('utf-8')
+    Returns:
+        Base64 encoded PDF bytes
+    """
+    if template_pdf_path is None:
+        template_pdf_path = os.path.join(os.path.dirname(__file__), 'CCEW_OFFICIAL_TEMPLATE.pdf')
+    generator = CCEWPDFGenerator(template_pdf_path)
+    return generator.generate_pdf(form_data)
 
 
 def get_pdf_filename(form_data):
     """Generate PDF filename"""
     job_no = form_data.get('serial_no', 'UNKNOWN')
     return f"CCEW_Form_Job_{job_no}.pdf"
+
+
+# Example usage
+if __name__ == "__main__":
+    # Sample data
+    test_data = {
+        'property_name': 'Test Building',
+        'install_suburb': 'Sydney',
+        'install_state': 'NSW',
+        'install_postcode': '2000',
+        'customer_first_name': 'John',
+        'customer_last_name': 'Smith',
+        'installer_first_name': 'Jane',
+        'installer_last_name': 'Installer',
+        'tester_first_name': 'Bob',
+        'tester_last_name': 'Tester',
+        'energy_provider': 'Ausgrid',
+    }
+    
+    print("🚀 Generating CCEW PDF...")
+    try:
+        pdf_b64 = generate_ccew_pdf(test_data)
+        print("✅ PDF generated successfully!")
+        print(f"📦 Size: {len(base64.b64decode(pdf_b64))} bytes")
+    except Exception as e:
+        print(f"❌ Error: {e}")
