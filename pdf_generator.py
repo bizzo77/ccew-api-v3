@@ -148,6 +148,10 @@ def generate_ccew_pdf(form_data, template_path=None):
     return base64.b64encode(pdf_bytes).decode('utf-8')
 
 
-def get_pdf_filename(job_number):
+def get_pdf_filename(form_data_or_job_number):
     """Generate PDF filename"""
-    return f"CCEW_Form_Job_{job_number}.pdf"
+    if isinstance(form_data_or_job_number, dict):
+        job_number = form_data_or_job_number.get('serial_no', 'Unknown')
+    else:
+        job_number = form_data_or_job_number
+    return f"CCEW_{job_number}.pdf"
