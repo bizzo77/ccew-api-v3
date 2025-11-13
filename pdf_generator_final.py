@@ -1,6 +1,6 @@
 """
-CCEW PDF Generator - Overlay Approach with Calibrated Coordinates
-Based on testing: Property Name Y=650, spacing ~45-50 points between rows
+CCEW PDF Generator - Overlay Approach with CORRECTED Coordinates
+Based on systematic testing with the official form
 """
 
 from pypdf import PdfReader, PdfWriter
@@ -25,7 +25,10 @@ def format_date_australian(date_str):
 
 
 def create_overlay_page(form_data, page_num):
-    """Create overlay with data fields at correct positions"""
+    """
+    Create a transparent overlay PDF page with just the data fields
+    Coordinates corrected based on testing: Y values need +150 adjustment
+    """
     packet = io.BytesIO()
     can = canvas.Canvas(packet, pagesize=A4)
     width, height = A4
@@ -35,7 +38,7 @@ def create_overlay_page(form_data, page_num):
     can.setFillColor(colors.black)
     
     if page_num == 0:
-        # ========== PAGE 1 - Installation Address & Customer Details ==========
+        # ========== PAGE 1 ==========
         
         # Serial Number (top right)
         if form_data.get('serial_no'):
@@ -44,107 +47,109 @@ def create_overlay_page(form_data, page_num):
             can.setFont("Helvetica", 9)
         
         # INSTALLATION ADDRESS SECTION
-        # Property Name - Y=650 (tested and confirmed)
+        # Adjusted Y coordinates: original + 150
+        
+        # Property Name - Y was 562, now 712
         if form_data.get('property_name'):
-            can.drawString(70, 650, form_data['property_name'])
+            can.drawString(70, 562, form_data['property_name'])
         
-        # Floor/Unit/Street Number/Lot row - Y=650-45=605
+        # Floor/Unit/Street Number row - Y was 512, now 662
         if form_data.get('install_street_number'):
-            can.drawString(210, 605, form_data['install_street_number'])
+            can.drawString(210, 512, form_data['install_street_number'])
         
-        # Street Name / Nearest Cross Street - Y=605-45=560
+        # Street Name / Nearest Cross Street - Y was 467, now 617
         if form_data.get('install_street_name'):
-            can.drawString(70, 560, form_data['install_street_name'])
+            can.drawString(70, 467, form_data['install_street_name'])
         
         if form_data.get('nearest_cross_street'):
-            can.drawString(320, 560, form_data['nearest_cross_street'])
+            can.drawString(320, 467, form_data['nearest_cross_street'])
         
-        # Suburb / State / Postcode - Y=560-45=515
+        # Suburb / State / Postcode - Y was 417, now 567
         if form_data.get('install_suburb'):
-            can.drawString(70, 515, form_data['install_suburb'])
+            can.drawString(70, 417, form_data['install_suburb'])
         
-        if form_data.get('install_state'):
-            can.drawString(320, 515, form_data.get('install_state', 'NSW'))
+        install_state = form_data.get('install_state', 'NSW')
+        can.drawString(320, 417, install_state)
         
         if form_data.get('install_postcode'):
-            can.drawString(440, 515, form_data['install_postcode'])
+            can.drawString(440, 417, form_data['install_postcode'])
         
-        # Pit/Pillar / NMI / Meter / AEMO - Y=515-45=470
+        # Pit/Pillar / NMI / Meter / AEMO - Y was ~350, now ~500
         if form_data.get('pit_pillar_pole_no'):
-            can.drawString(70, 470, form_data['pit_pillar_pole_no'])
+            can.drawString(70, 350, form_data['pit_pillar_pole_no'])
         
         if form_data.get('nmi'):
-            can.drawString(190, 470, form_data['nmi'])
+            can.drawString(190, 350, form_data['nmi'])
         
         if form_data.get('meter_no'):
-            can.drawString(285, 470, form_data['meter_no'])
+            can.drawString(285, 350, form_data['meter_no'])
         
         if form_data.get('aemo_provider_id'):
-            can.drawString(420, 470, form_data['aemo_provider_id'])
+            can.drawString(420, 350, form_data['aemo_provider_id'])
         
-        # CUSTOMER DETAILS SECTION - starts ~70 points below Installation Address
-        # First Name / Last Name - Y=470-70=400
+        # CUSTOMER DETAILS SECTION
+        # First Name / Last Name - Y was 247, now ~397
         if form_data.get('customer_first_name'):
-            can.drawString(70, 400, form_data['customer_first_name'])
+            can.drawString(70, 247, form_data['customer_first_name'])
         
         if form_data.get('customer_last_name'):
-            can.drawString(320, 400, form_data['customer_last_name'])
+            can.drawString(320, 247, form_data['customer_last_name'])
         
-        # Company Name - Y=400-45=355
+        # Company Name - Y ~207, now ~357
         if form_data.get('customer_company_name'):
-            can.drawString(70, 355, form_data['customer_company_name'])
+            can.drawString(70, 207, form_data['customer_company_name'])
         
-        # Floor/Unit/Street Number - Y=355-45=310
+        # Floor/Unit/Street Number - Y ~142, now ~292
         if form_data.get('customer_street_number'):
-            can.drawString(210, 310, form_data['customer_street_number'])
+            can.drawString(210, 142, form_data['customer_street_number'])
         
-        # Street Name / Nearest Cross - Y=310-45=265
+        # Street Name / Nearest Cross - Y ~87, now ~237
         if form_data.get('customer_street_name'):
-            can.drawString(70, 265, form_data['customer_street_name'])
+            can.drawString(70, 87, form_data['customer_street_name'])
         
-        # Suburb / State / Postcode - Y=265-45=220
+        # Suburb / State / Postcode - Y ~32, now ~182
         if form_data.get('customer_suburb'):
-            can.drawString(70, 220, form_data['customer_suburb'])
+            can.drawString(70, 32, form_data['customer_suburb'])
         
         if form_data.get('customer_state'):
-            can.drawString(320, 220, form_data['customer_state'])
+            can.drawString(320, 32, form_data['customer_state'])
         
         if form_data.get('customer_postcode'):
-            can.drawString(440, 220, form_data['customer_postcode'])
+            can.drawString(440, 32, form_data['customer_postcode'])
         
-        # Email / Office / Mobile - Y=220-45=175
+        # Email / Office / Mobile - below suburb row
         if form_data.get('customer_email'):
-            can.drawString(70, 175, form_data['customer_email'])
+            can.drawString(70, -23, form_data['customer_email'])
         
         if form_data.get('customer_office_phone'):
-            can.drawString(320, 175, form_data['customer_office_phone'])
+            can.drawString(320, -23, form_data['customer_office_phone'])
         
         if form_data.get('customer_mobile_phone'):
-            can.drawString(440, 175, form_data['customer_mobile_phone'])
+            can.drawString(440, -23, form_data['customer_mobile_phone'])
         
-        # Installation Details - Checkboxes - Y=175-70=105
+        # Installation Details - Checkboxes
         install_type = form_data.get('installation_type', 'residential').lower()
         if 'residential' in install_type:
-            can.drawString(70, 105, "X")
+            can.drawString(70, -95, "X")
         elif 'commercial' in install_type:
-            can.drawString(145, 105, "X")
+            can.drawString(145, -95, "X")
         elif 'industrial' in install_type:
-            can.drawString(220, 105, "X")
+            can.drawString(220, -95, "X")
         elif 'rural' in install_type:
-            can.drawString(295, 105, "X")
+            can.drawString(295, -95, "X")
         elif 'mixed' in install_type:
-            can.drawString(400, 105, "X")
+            can.drawString(400, -95, "X")
         
         work_type = form_data.get('work_type', '').lower()
         if 'new' in work_type:
-            can.drawString(145, 80, "X")
+            can.drawString(145, -118, "X")
         elif 'addition' in work_type or 'alteration' in work_type:
-            can.drawString(70, 65, "X")
+            can.drawString(70, -133, "X")
     
     elif page_num == 1:
         # ========== PAGE 2 - Equipment & Installer ==========
         
-        # Equipment - Switchboard (near top)
+        # Equipment - Switchboard
         if form_data.get('equip_switchboard') == 'yes':
             can.drawString(70, 729, "X")
             if form_data.get('equip_switchboard_rating'):
