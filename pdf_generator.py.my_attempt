@@ -87,47 +87,57 @@ class CCEWPDFGenerator:
         """Draw page 1 fields (Installation Address & Customer Details)"""
         
         # Installation Address Section
-        self._draw_if_exists(can, 70, height - 187, data.get('property_name'))  # Property Name Y=655
-        # Floor/Unit/Street Number/Lot row Y=620
-        self._draw_if_exists(can, 70, height - 222, data.get('install_floor'))  
-        self._draw_if_exists(can, 180, height - 222, data.get('install_unit'))  
-        self._draw_if_exists(can, 280, height - 222, data.get('install_street_number'))  
-        self._draw_if_exists(can, 700, height - 222, data.get('install_lot_rmb'))  
-        # Street Name/Nearest Cross Street row Y=580
-        self._draw_if_exists(can, 70, height - 262, data.get('install_street_name'))  
-        self._draw_if_exists(can, 470, height - 262, data.get('nearest_cross_street'))  
-        # Suburb/State/Postcode row Y=535
-        self._draw_if_exists(can, 70, height - 307, data.get('install_suburb'))  
-        self._draw_if_exists(can, 270, height - 307, data.get('install_state', 'NSW'))  
-        self._draw_if_exists(can, 540, height - 307, data.get('install_postcode'))  
-        # Pit/NMI/Meter/AEMO row Y=495
-        self._draw_if_exists(can, 70, height - 347, data.get('pit_pillar_pole_no'))  
-        self._draw_if_exists(can, 280, height - 347, data.get('nmi'))  
-        self._draw_if_exists(can, 420, height - 347, data.get('meter_no'))  
-        self._draw_if_exists(can, 610, height - 347, data.get('aemo_provider_id'))
+        # Property Name - full width field
+        self._draw_if_exists(can, 60, height - 192+23, data.get('property_name'))
+        
+        # Floor/Unit/Street Number/Lot row
+        self._draw_if_exists(can, 60, height - 192, data.get('install_floor'))
+        self._draw_if_exists(can, 180, height - 192, data.get('install_unit'))
+        self._draw_if_exists(can, 465, height - 192, data.get('install_street_number'))
+        self._draw_if_exists(can, 700, height - 192, data.get('install_lot'))
+        
+        # Street Name / Nearest Cross Street row
+        self._draw_if_exists(can, 60, height - 192-45, data.get('install_street_name'))
+        self._draw_if_exists(can, 470, height - 192-45, data.get('nearest_cross_street'))
+        
+        # Suburb / State / Postcode row
+        self._draw_if_exists(can, 60, height - 192-90, data.get('install_suburb'))
+        self._draw_if_exists(can, 310, height - 192-90, data.get('install_state', 'NSW'))
+        self._draw_if_exists(can, 437, height - 192-90, data.get('install_postcode'))
+        
+        # Pit/Pillar / NMI / Meter / AEMO row
+        self._draw_if_exists(can, 60, height - 192-135, data.get('pit_pillar_pole_no'))
+        self._draw_if_exists(can, 240, height - 192-135, data.get('nmi'))
+        self._draw_if_exists(can, 460, height - 192-135, data.get('meter_no'))
+        self._draw_if_exists(can, 600, height - 192-135, data.get('aemo_provider_id'))
         
         # Customer Details Section
-        # First/Last Name row Y=465
-        self._draw_if_exists(can, 70, height - 377, data.get('customer_first_name'))  
-        self._draw_if_exists(can, 460, height - 377, data.get('customer_last_name'))  
-        # Company Name row Y=425
-        self._draw_if_exists(can, 70, height - 417, data.get('customer_company_name'))  
-        # Floor/Unit/Street Number/Lot row Y=405
-        self._draw_if_exists(can, 70, height - 437, data.get('customer_floor'))  
-        self._draw_if_exists(can, 180, height - 437, data.get('customer_unit'))  
-        self._draw_if_exists(can, 280, height - 437, data.get('customer_street_number'))  
-        self._draw_if_exists(can, 700, height - 437, data.get('customer_lot_rmb'))  
-        # Street Name/Nearest Cross Street row Y=365
-        self._draw_if_exists(can, 70, height - 477, data.get('customer_street_name'))  
-        self._draw_if_exists(can, 470, height - 477, data.get('customer_nearest_cross_street'))  
-        # Suburb/State/Postcode row Y=325
-        self._draw_if_exists(can, 70, height - 517, data.get('customer_suburb'))  
-        self._draw_if_exists(can, 270, height - 517, data.get('customer_state'))  
-        self._draw_if_exists(can, 540, height - 517, data.get('customer_postcode'))  
-        # Email/Office/Mobile row Y=285
-        self._draw_if_exists(can, 70, height - 557, data.get('customer_email'))  
-        self._draw_if_exists(can, 375, height - 557, data.get('customer_office_phone'))  
-        self._draw_if_exists(can, 525, height - 557, data.get('customer_mobile_phone'))
+        # First Name / Last Name row
+        self._draw_if_exists(can, 60, height - 392+23, data.get('customer_first_name'))
+        self._draw_if_exists(can, 470, height - 392+23, data.get('customer_last_name'))
+        
+        # Company Name - full width field
+        self._draw_if_exists(can, 60, height - 392, data.get('customer_company_name'))
+        
+        # Floor/Unit/Street Number/Lot row
+        self._draw_if_exists(can, 60, height - 392-45, data.get('customer_floor'))
+        self._draw_if_exists(can, 180, height - 392-45, data.get('customer_unit'))
+        self._draw_if_exists(can, 465, height - 392-45, data.get('customer_street_number'))
+        self._draw_if_exists(can, 700, height - 392-45, data.get('customer_lot'))
+        
+        # Street Name / Nearest Cross Street row
+        self._draw_if_exists(can, 60, height - 392-90, data.get('customer_street_name'))
+        self._draw_if_exists(can, 470, height - 392-90, data.get('customer_cross_street'))
+        
+        # Suburb / State / Postcode row
+        self._draw_if_exists(can, 60, height - 392-135, data.get('customer_suburb'))
+        self._draw_if_exists(can, 310, height - 392-135, data.get('customer_state'))
+        self._draw_if_exists(can, 437, height - 392-135, data.get('customer_postcode'))
+        
+        # Email / Office / Mobile row
+        self._draw_if_exists(can, 60, height - 392-180, data.get('customer_email'))
+        self._draw_if_exists(can, 580, height - 392-180, data.get('customer_office_phone'))
+        self._draw_if_exists(can, 720, height - 392-180, data.get('customer_mobile_phone'))
         
         # Installation type checkboxes
         install_type = data.get('installation_type', '').lower()
@@ -263,7 +273,7 @@ class CCEWPDFGenerator:
 
 
 # Convenience function for backward compatibility
-def generate_ccew_pdf(form_data, template_pdf_path="CCEW_OFFICIAL_TEMPLATE.pdf"):
+def generate_ccew_pdf(form_data, template_pdf_path=None):
     """
     Generate CCEW PDF - convenience function
     
@@ -274,16 +284,16 @@ def generate_ccew_pdf(form_data, template_pdf_path="CCEW_OFFICIAL_TEMPLATE.pdf")
     Returns:
         Base64 encoded PDF bytes
     """
+    if template_pdf_path is None:
+        template_pdf_path = os.path.join(os.path.dirname(__file__), 'CCEW_OFFICIAL_TEMPLATE.pdf')
     generator = CCEWPDFGenerator(template_pdf_path)
     return generator.generate_pdf(form_data)
 
 
-def get_pdf_filename(job_number):
-    """
-    Generate PDF filename from job number
-    For backward compatibility with existing API
-    """
-    return f"CCEW_Form_Job_{job_number}.pdf"
+def get_pdf_filename(form_data):
+    """Generate PDF filename"""
+    job_no = form_data.get('serial_no', 'UNKNOWN')
+    return f"CCEW_Form_Job_{job_no}.pdf"
 
 
 # Example usage

@@ -1,7 +1,7 @@
 """Test the new PDF generator with sample data"""
 
 import base64
-from pdf_generator_new import generate_ccew_pdf, get_pdf_filename
+from pdf_generator import generate_ccew_pdf, get_pdf_filename
 
 # Sample test data
 test_data = {
@@ -91,7 +91,7 @@ try:
     pdf_base64 = generate_ccew_pdf(test_data)
     pdf_bytes = base64.b64decode(pdf_base64)
     
-    filename = get_pdf_filename(test_data)
+    filename = get_pdf_filename(test_data.get('serial_no', '3015'))
     with open(filename, 'wb') as f:
         f.write(pdf_bytes)
     
