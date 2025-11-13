@@ -124,7 +124,7 @@ def create_overlay_page(form_data, page_num):
     return packet
 
 
-def generate_ccew_pdf(form_data, template_path):
+def generate_ccew_pdf(form_data, template_path='/opt/render/project/src/CCEWfillableform(unlocked).pdf'):
     """Generate filled CCEW PDF by overlaying data on template"""
     template_pdf = PdfReader(template_path)
     output_pdf = PdfWriter()
