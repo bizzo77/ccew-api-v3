@@ -31,6 +31,10 @@ def create_overlay_page(form_data, page_num):
     if page_num == 0:
         # ===== PAGE 1 =====
         
+        # SERIAL NUMBER (top right header)
+        if form_data.get('serial_no'):
+            can.drawString(490, 762, form_data['serial_no'])
+        
         # INSTALLATION ADDRESS
         if form_data.get('property_name'):
             can.drawString(50, 660, form_data['property_name'])
