@@ -368,7 +368,7 @@ def create_overlay_page(form_data, page_num):
         
         # Test completed on (date field)
         if form_data.get('test_date'):
-            can.drawString(220, 572, form_data['test_date'])
+            can.drawString(220, 577, form_data['test_date'])
         
         # TESTERS LICENSE DETAILS
         if form_data.get('tester_same_as_installer'):
@@ -433,7 +433,7 @@ def create_overlay_page(form_data, page_num):
             can.drawString(50, 225, form_data['meter_provider_email'])
         
         if form_data.get('owner_email'):
-            can.drawString(50, 190, form_data['owner_email'])
+            can.drawString(50, 180, form_data['owner_email'])
         
         # Signature field (text placeholder)
         if form_data.get('signature'):
