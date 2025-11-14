@@ -446,7 +446,7 @@ def submit_ccew():
             # Load capacity fields
             'load_increase': request.form.get('load_increase', ''),
             'load_within_capacity': request.form.get('load_within_capacity', ''),
-            'work_connected_supply': request.form.get('work_connected_supply', ''),
+            'work_connected': request.form.get('work_connected', ''),
             
             # Installer additional fields
             'installer_floor': request.form.get('installer_floor', ''),
@@ -584,7 +584,7 @@ def transform_form_data_for_pdf(form_data):
     
     # Map field name differences
     transformed['estimated_load_increase'] = form_data.get('load_increase', '')
-    transformed['work_connected_to_supply'] = form_data.get('work_connected_supply', '')
+    transformed['work_connected_to_supply'] = form_data.get('work_connected', '')
     
     return transformed
 
