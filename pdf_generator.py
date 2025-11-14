@@ -136,39 +136,37 @@ def create_overlay_page(form_data, page_num):
         if 'mixed' in install_type or 'development' in install_type:
             draw_checkbox(can, 535, 205, True)
         
-        # Work carried out (checkboxes)
-        work_type = form_data.get('work_carried_out', '').lower()
-        if 'new' in work_type or 'new work' in work_type:
+        # Work carried out (checkboxes) - check individual fields
+        if form_data.get('work_new_work'):
             draw_checkbox(can, 205, 170, True)
-        if 'installed meter' in work_type or 'install meter' in work_type:
+        if form_data.get('work_installed_meter'):
             draw_checkbox(can, 360, 170, True)
-        if 'network' in work_type:
+        if form_data.get('work_network_connection'):
             draw_checkbox(can, 535, 170, True)
-        if 'addition' in work_type or 'alteration' in work_type:
+        if form_data.get('work_addition_alteration'):
             draw_checkbox(can, 205, 150, True)
-        if 'advanced meter' in work_type:
+        if form_data.get('work_advanced_meter'):
             draw_checkbox(can, 360, 150, True)
-        if 'ev' in work_type or 'electric vehicle' in work_type:
+        if form_data.get('work_ev_connection'):
             draw_checkbox(can, 535, 150, True)
-        if 're-inspection' in work_type or 'reinspection' in work_type:
+        if form_data.get('work_reinspection'):
             draw_checkbox(can, 240, 130, True)
         
         if form_data.get('non_compliance_no'):
             can.drawString(410, 130, form_data['non_compliance_no'])
         
-        # Special Conditions (checkboxes)
-        special_conditions = form_data.get('special_conditions', '').lower()
-        if 'over 100' in special_conditions or '100 amps' in special_conditions:
+        # Special Conditions (checkboxes) - check individual fields
+        if form_data.get('special_over_100_amps'):
             draw_checkbox(can, 205, 90, True)
-        if 'hazardous' in special_conditions:
+        if form_data.get('special_hazardous_area'):
             draw_checkbox(can, 360, 90, True)
-        if 'off grid' in special_conditions:
+        if form_data.get('special_off_grid'):
             draw_checkbox(can, 535, 90, True)
-        if 'high voltage' in special_conditions:
+        if form_data.get('special_high_voltage'):
             draw_checkbox(can, 205, 70, True)
-        if 'unmetered' in special_conditions:
+        if form_data.get('special_unmetered'):
             draw_checkbox(can, 360, 70, True)
-        if 'secondary power' in special_conditions:
+        if form_data.get('special_secondary_power'):
             draw_checkbox(can, 535, 70, True)
     
     elif page_num == 1:
@@ -276,20 +274,28 @@ def create_overlay_page(form_data, page_num):
             if meter.get('reading'):
                 can.drawString(430, y, str(meter['reading']))
             if meter.get('tariff'):
-                can.drawString(445, y, str(meter['tariff']))
+                tariff_val = str(meter['tariff'])
+                # Add 'T' prefix if not already present
+                if not tariff_val.startswith('T'):
+                    tariff_val = 'T' + tariff_val
+                can.drawString(480, y, tariff_val)
         
         # Additional Page 2 Fields (between meters and installer details)
         if form_data.get('estimated_load_increase'):
             can.drawString(230, 360, form_data['estimated_load_increase'])
         
-        if form_data.get('load_within_capacity') == 'yes':
+        # Load capacity checkboxes - handle various input formats
+        load_capacity = str(form_data.get('load_within_capacity', '')).lower()
+        if load_capacity in ['yes', 'y', 'true', '1', 'on']:
             draw_checkbox(can, 415, 340, True)
-        elif form_data.get('load_within_capacity') == 'no':
+        elif load_capacity in ['no', 'n', 'false', '0']:
             draw_checkbox(can, 480, 340, True)
         
-        if form_data.get('work_connected_to_supply') == 'yes':
+        # Work connected checkboxes - handle various input formats
+        work_connected = str(form_data.get('work_connected_supply', '')).lower()
+        if work_connected in ['yes', 'y', 'true', '1', 'on']:
             draw_checkbox(can, 415, 323, True)
-        elif form_data.get('work_connected_to_supply') == 'no':
+        elif work_connected in ['no', 'n', 'false', '0']:
             draw_checkbox(can, 480, 320, True)
         
         # INSTALLERS LICENSE DETAILS (Page 2)
@@ -355,7 +361,7 @@ def create_overlay_page(form_data, page_num):
         
         if tests.get('earthing_system'):
             draw_checkbox(can, 65, 742, True)
-        if tests.get('residual_current_device'):
+        if tests.get('rcd_operational'):  # Fixed: was residual_current_device
             draw_checkbox(can, 65, 725, True)
         if tests.get('insulation_resistance'):
             draw_checkbox(can, 65, 707, True)
