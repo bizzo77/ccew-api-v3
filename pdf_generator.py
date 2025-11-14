@@ -279,7 +279,7 @@ def create_overlay_page(form_data, page_num):
             can.drawString(230, 360, form_data['estimated_load_increase'])
         
         if form_data.get('load_within_capacity') == 'yes':
-            draw_checkbox(can, 45, 340, True)
+            draw_checkbox(can, 415, 340, True)
         elif form_data.get('load_within_capacity') == 'no':
             draw_checkbox(can, 480, 340, True)
         
