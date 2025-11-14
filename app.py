@@ -448,15 +448,36 @@ def submit_ccew():
             'load_within_capacity': request.form.get('load_within_capacity', ''),
             'work_connected_supply': request.form.get('work_connected_supply', ''),
             
-            # Installer Contact
+            # Installer additional fields
+            'installer_floor': request.form.get('installer_floor', ''),
+            'installer_unit': request.form.get('installer_unit', ''),
+            'installer_lot_rmb': request.form.get('installer_lot_rmb', ''),
+            'installer_cross_street': request.form.get('installer_cross_street', ''),
             'installer_mobile_phone': request.form.get('installer_mobile_phone', ''),
+            'installer_supervisor_no': request.form.get('installer_supervisor_no', ''),
+            'installer_supervisor_expiry': request.form.get('installer_supervisor_expiry', ''),
+            'installer_contractor_license': request.form.get('installer_contractor_license', ''),
+            'installer_contractor_expiry': request.form.get('installer_contractor_expiry', ''),
             
-            # Tester Contact
+            # Tester additional fields
+            'tester_floor': request.form.get('tester_floor', ''),
+            'tester_unit': request.form.get('tester_unit', ''),
+            'tester_lot_rmb': request.form.get('tester_lot_rmb', ''),
+            'tester_cross_street': request.form.get('tester_cross_street', ''),
             'tester_mobile_phone': request.form.get('tester_mobile_phone', ''),
+            'tester_supervisor_no': request.form.get('tester_supervisor_no', ''),
+            'tester_supervisor_expiry': request.form.get('tester_supervisor_expiry', ''),
+            'tester_contractor_license': request.form.get('tester_contractor_license', ''),
+            'tester_contractor_expiry': request.form.get('tester_contractor_expiry', ''),
+            
+            # Submit CCEW fields
+            'meter_provider_email': request.form.get('meter_provider_email', ''),
+            'owner_email': request.form.get('owner_email', ''),
             
             # Dates
             'date_work_completed': request.form.get('date_work_completed', ''),
             'date_work_tested': request.form.get('date_work_tested', ''),
+            'test_date': request.form.get('test_date', ''),
             
             # Signature
             'signature': request.form.get('signature', '')
@@ -488,6 +509,84 @@ def submit_ccew():
             "error": str(e),
             "traceback": error_details
         }), 500
+
+
+def transform_form_data_for_pdf(form_data):
+    """Transform flat form data into nested structure expected by PDF generator"""
+    
+    # Transform equipment data to flat structure expected by PDF generator
+    equipment = {}
+    equipment_mapping = {
+        'switchboard': 'switchboard',
+        'circuits': 'circuits',
+        'lighting': 'lighting',
+        'sockets': 'socket_outlets',
+        'appliances': 'appliances',
+        'generation': 'generation',
+        'storage': 'storage'
+    }
+    
+    for form_key, pdf_key in equipment_mapping.items():
+        if form_data.get(f'equip_{form_key}'):
+            equipment[f'{pdf_key}_checked'] = True
+            equipment[f'{pdf_key}_rating'] = form_data.get(f'equip_{form_key}_rating', '')
+            equipment[f'{pdf_key}_number'] = form_data.get(f'equip_{form_key}_number', '')
+            equipment[f'{pdf_key}_particulars'] = form_data.get(f'equip_{form_key}_particulars', '')
+    
+    # Transform meters data to structure expected by PDF generator
+    meters = []
+    for i in range(1, 9):  # Up to 8 meters
+        # Check if this meter has any data
+        has_data = (form_data.get(f'meter_{i}_i') or 
+                   form_data.get(f'meter_{i}_r') or 
+                   form_data.get(f'meter_{i}_e') or
+                   form_data.get(f'meter_{i}_number'))
+        
+        if has_data:
+            meter = {
+                'type_i': bool(form_data.get(f'meter_{i}_i')),
+                'type_r': bool(form_data.get(f'meter_{i}_r')),
+                'type_e': bool(form_data.get(f'meter_{i}_e')),
+                'meter_no': form_data.get(f'meter_{i}_number', ''),
+                'no_dials': form_data.get(f'meter_{i}_dials', ''),
+                'master_sub_status': form_data.get(f'meter_{i}_master_sub', ''),
+                'wired_as_master_sub': form_data.get(f'meter_{i}_wired_as', ''),
+                'register_no': form_data.get(f'meter_{i}_register', ''),
+                'reading': form_data.get(f'meter_{i}_reading', ''),
+                'tariff': form_data.get(f'meter_{i}_tariff', '')
+            }
+            meters.append(meter)
+    
+    # Transform tests data
+    tests = {}
+    if form_data.get('test_earthing'):
+        tests['earthing_system'] = True
+    if form_data.get('test_rcd'):
+        tests['rcd_operational'] = True
+    if form_data.get('test_insulation'):
+        tests['insulation_resistance'] = True
+    if form_data.get('test_visual'):
+        tests['visual_check'] = True
+    if form_data.get('test_polarity'):
+        tests['polarity'] = True
+    if form_data.get('test_standalone'):
+        tests['standalone_system'] = True
+    if form_data.get('test_current'):
+        tests['correct_current_connections'] = True
+    if form_data.get('test_fault_loop'):
+        tests['fault_loop_impedance'] = True
+    
+    # Create transformed data
+    transformed = {**form_data}  # Start with all original data
+    transformed['equipment'] = equipment
+    transformed['meters'] = meters
+    transformed['tests'] = tests
+    
+    # Map field name differences
+    transformed['estimated_load_increase'] = form_data.get('load_increase', '')
+    transformed['work_connected_to_supply'] = form_data.get('work_connected_supply', '')
+    
+    return transformed
 
 
 def send_email_notification(session_id, form_data):
@@ -603,9 +702,10 @@ def send_email_notification(session_id, form_data):
         </html>
         """
         
-        # Generate PDF
-        pdf_base64 = generate_ccew_pdf(form_data)
-        pdf_filename = get_pdf_filename(form_data)
+        # Generate PDF (transform data first)
+        transformed_data = transform_form_data_for_pdf(form_data)
+        pdf_base64 = generate_ccew_pdf(transformed_data)
+        pdf_filename = get_pdf_filename(transformed_data)
         
         # Save PDF to temporary location for HTTP access
         pdf_path = f"/tmp/{pdf_filename}"
