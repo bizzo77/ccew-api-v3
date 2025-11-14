@@ -278,7 +278,7 @@ def create_overlay_page(form_data, page_num):
                 # Add 'T' prefix if not already present
                 if not tariff_val.startswith('T'):
                     tariff_val = 'T' + tariff_val
-                can.drawString(480, y, tariff_val)
+                can.drawString(495, y, tariff_val)
         
         # Additional Page 2 Fields (between meters and installer details)
         if form_data.get('estimated_load_increase'):
@@ -292,7 +292,7 @@ def create_overlay_page(form_data, page_num):
             draw_checkbox(can, 480, 340, True)
         
         # Work connected checkboxes - handle various input formats
-        work_connected = str(form_data.get('work_connected_supply', '')).lower()
+        work_connected = str(form_data.get('work_connected_to_supply', '')).lower()
         if work_connected in ['yes', 'y', 'true', '1', 'on']:
             draw_checkbox(can, 415, 323, True)
         elif work_connected in ['no', 'n', 'false', '0']:
