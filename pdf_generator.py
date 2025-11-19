@@ -439,6 +439,9 @@ def create_overlay_page(form_data, page_num):
             can.drawString(450, 372, form_data['tester_contractor_expiry'])
         
         # SUBMIT CCEW
+        if form_data.get('energy_provider'):
+            can.drawString(50, 270, form_data['energy_provider'])
+        
         if form_data.get('meter_provider_email'):
             can.drawString(50, 225, form_data['meter_provider_email'])
         
