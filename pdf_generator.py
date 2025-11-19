@@ -442,7 +442,7 @@ def create_overlay_page(form_data, page_num):
         if form_data.get('energy_provider'):
             # Cover the placeholder text with a white rectangle
             can.setFillColorRGB(1, 1, 1)  # White
-            can.rect(45, 270, 620, 11, fill=1, stroke=0)  # Cover "Choose an Energy Provider..."
+            can.rect(45, 270, 520, 11, fill=1, stroke=0)  # Cover "Choose an Energy Provider..."
             # Write the selected energy provider
             can.setFillColorRGB(0, 0, 0)  # Black
             can.drawString(50, 271, form_data['energy_provider'])
