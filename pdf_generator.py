@@ -440,11 +440,12 @@ def create_overlay_page(form_data, page_num):
         
         # SUBMIT CCEW
         if form_data.get('energy_provider'):
-            # Cover the placeholder text with a white rectangle
-            can.setFillColorRGB(1, 1, 1)  # White
-            can.rect(45, 270, 785, 11, fill=1, stroke=0)  # Cover "Choose an Energy Provider..."
+            # Draw white box with black outline to replicate empty field
+            can.setFillColorRGB(1, 1, 1)  # White fill
+            can.setStrokeColorRGB(0, 0, 0)  # Black outline
+            can.rect(42, 266, 420, 13, fill=1, stroke=1)  # x=42, y=266, width=420, height=13
             # Write the selected energy provider
-            can.setFillColorRGB(0, 0, 0)  # Black
+            can.setFillColorRGB(0, 0, 0)  # Black text
             can.drawString(50, 271, form_data['energy_provider'])
         
         if form_data.get('meter_provider_email'):
