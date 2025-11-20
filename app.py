@@ -739,8 +739,6 @@ def send_email_notification(session_id, form_data):
         
         email_body = f"""<html>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-    <p>Dear Energy Provider,</p>
-    
     <p>Please find attached the Certificate of Compliance for Electrical Work (CCEW) for the following job:</p>
     
     <table style="margin: 20px 0; border-collapse: collapse;">
