@@ -443,7 +443,7 @@ def create_overlay_page(form_data, page_num):
             # Draw white box with black outline to replicate empty field
             can.setFillColorRGB(1, 1, 1)  # White fill
             can.setStrokeColorRGB(0, 0, 0)  # Black outline
-            can.rect(42, 266, 420, 13, fill=1, stroke=1)  # x=42, y=266, width=420, height=13
+            can.rect(42, 266, 420, 15, fill=1, stroke=1)  # x=42, y=266, width=420, height=15
             # Write the selected energy provider
             can.setFillColorRGB(0, 0, 0)  # Black text
             can.drawString(50, 271, form_data['energy_provider'])
