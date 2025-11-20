@@ -27,6 +27,18 @@ COMPANY_DATA = {
     'office_phone': '47068270'
 }
 
+# Energy provider email mapping
+# TODO: Update these with actual energy provider emails when ready for production
+ENERGY_PROVIDER_EMAILS = {
+    'Ausgrid': 'jimbadans@evolutionbc.com.au',  # TODO: Replace with actual Ausgrid email
+    'Endeavour Energy': 'jimbadans@evolutionbc.com.au',  # TODO: Replace with actual Endeavour email
+    'Essential Energy': 'jimbadans@evolutionbc.com.au'  # TODO: Replace with actual Essential email
+}
+
+def get_energy_provider_email(provider_name):
+    """Get email address for energy provider"""
+    return ENERGY_PROVIDER_EMAILS.get(provider_name, 'jimbadans@evolutionbc.com.au')
+
 def get_db():
     """Get database connection"""
     db = getattr(g, '_database', None)
@@ -757,10 +769,13 @@ def send_email_notification(session_id, form_data):
         # Send form data to Make.com webhook
         import requests
         
+        # Get energy provider email based on selection
+        provider_email = get_energy_provider_email(energy_provider)
+        
         payload = {
             'session_id': session_id,
             'subject': f"CCEW Form Submission - Job #{job_no} - {customer_name}",
-            'to_email': 'jimbadans@evolutionbc.com.au',
+            'to_email': provider_email,  # Dynamic email based on energy provider
             'email_body': email_body,
             'pdf_url': pdf_url,
             'pdf_filename': pdf_filename,
