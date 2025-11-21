@@ -30,7 +30,7 @@ COMPANY_DATA = {
 # Energy provider email mapping
 # TODO: Update these with actual energy provider emails when ready for production
 ENERGY_PROVIDER_EMAILS = {
-    'Ausgrid': 'jimbadans@evolutionbc.com.au',  # TODO: Replace with actual Ausgrid email
+    'Ausgrid': 'karl@proformelec.com.au',  # Testing with Karl's email
     'Endeavour Energy': 'jimbadans@evolutionbc.com.au',  # TODO: Replace with actual Endeavour email
     'Essential Energy': 'jimbadans@evolutionbc.com.au'  # TODO: Replace with actual Essential email
 }
