@@ -598,6 +598,18 @@ def transform_form_data_for_pdf(form_data):
     transformed['estimated_load_increase'] = form_data.get('load_increase', '')
     transformed['work_connected_to_supply'] = form_data.get('work_connected', '')
     
+    # Map license fields from SimPro to PDF fields
+    # If contractor license is not filled in form, use the tech license from SimPro
+    if not form_data.get('installer_contractor_license') and form_data.get('installer_license_no'):
+        transformed['installer_contractor_license'] = form_data.get('installer_license_no')
+    if not form_data.get('installer_contractor_expiry') and form_data.get('installer_license_expiry'):
+        transformed['installer_contractor_expiry'] = form_data.get('installer_license_expiry')
+    
+    if not form_data.get('tester_contractor_license') and form_data.get('tester_license_no'):
+        transformed['tester_contractor_license'] = form_data.get('tester_license_no')
+    if not form_data.get('tester_contractor_expiry') and form_data.get('tester_license_expiry'):
+        transformed['tester_contractor_expiry'] = form_data.get('tester_license_expiry')
+    
     return transformed
 
 
