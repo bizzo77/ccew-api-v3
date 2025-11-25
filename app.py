@@ -30,9 +30,9 @@ COMPANY_DATA = {
 # Energy provider email mapping
 # TODO: Update these with actual energy provider emails when ready for production
 ENERGY_PROVIDER_EMAILS = {
-    'Ausgrid': 'karl@proformelec.com.au',  # Testing with Karl's email
-    'Endeavour Energy': 'jimbadans@evolutionbc.com.au',  # TODO: Replace with actual Endeavour email
-    'Essential Energy': 'jimbadans@evolutionbc.com.au'  # TODO: Replace with actual Essential email
+    'Ausgrid': 'admin@proformelec.com.au',  # Testing phase 2
+    'Endeavour Energy': 'admin@proformelec.com.au',  # Testing phase 2
+    'Essential Energy': 'admin@proformelec.com.au'  # Testing phase 2
 }
 
 def get_energy_provider_email(provider_name):
